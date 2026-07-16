@@ -1,7 +1,8 @@
 auto();
 const U = require("/storage/emulated/0/脚本/scrpit/utils/utils.js");
 const P = require("/storage/emulated/0/脚本/scrpit/constant/坐标.js");
-
+toast("刷魔素脚本开始");
+console.log("刷魔素脚本启动");
 // 更稳健的屏幕截取，带重试和失败提示
 function safeRequestScreenCapture(maxAttempts = 3) {
     for (let i = 0; i < maxAttempts; i++) {
@@ -22,7 +23,7 @@ if (!safeRequestScreenCapture()) {
 
 function oneSelectSwitch() {
     try {
-        var result = U.ocrRegionCenter(P.单选[0], P.单选[1], 200, 200, P.REF_WIDTH, P.REF_HEIGHT) || [];
+        var result = U.ocrRegionCenter(P.单选[0], P.单选[1],400,400, P.REF_WIDTH, P.REF_HEIGHT) || [];
         if (result.some(t => t && t.includes("单选"))) {
             U.clickByPoint([P.单选[0], P.单选[1]], P.REF_WIDTH, P.REF_HEIGHT);
             sleep(300);
@@ -78,7 +79,7 @@ function tapMagicDevice() {
                         .slice(0, 3);
                     matches.forEach(match => {
                         console.log(`点击魔导设备: (${match.point.x}, ${match.point.y}), 置信度: ${match.similarity}`);
-                        U.pressByPoint([match.point.x, match.point.y], P.REF_WIDTH, P.REF_HEIGHT, 30);
+                        U.pressByPoint([match.point.x, match.point.y], 30, P.REF_WIDTH, P.REF_HEIGHT);
                         sleepRandom(120, 200);
                     });
                     clickSteps([P.开始加工, P.确认, P.领取点数, P.领取点数之后]);
@@ -109,7 +110,8 @@ function decompositionInterface(maxRetries = 2) {
             } else {
                 clickSteps([P.返回, P.选单, P.角色, P.技能, P.使用特殊技能未学汪, P.锻造大师技能, P.素材加工], 1000);
             }
-            var result = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 400, 400, P.REF_WIDTH, P.REF_HEIGHT) || [];
+            sleep(800);
+            var result = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 300,300,P.REF_WIDTH, P.REF_HEIGHT) || [];
             console.log("decompositionInterface OCR result:", result);
             if (result.some(t => t && t.includes("开始加工"))) {
                 toast("进入成功");
@@ -127,13 +129,14 @@ function decompositionInterface(maxRetries = 2) {
 
 function runTaskWithTimeout(timeoutMs = 5 * 60 * 1000) {
     let start = Date.now();
+    console.log("开始执行任务，超时时间(ms):", timeoutMs, "开始时间:", start);
     while (Date.now() - start < timeoutMs) {
-        U.pressByPoint(P.神速, P.REF_WIDTH, P.REF_HEIGHT, 30);
+        U.pressByPoint(P.神速, 30, P.REF_WIDTH, P.REF_HEIGHT);
         for (let i = 0; i < 150; i++) {
-            U.pressByPoint(P.攻击, P.REF_WIDTH, P.REF_HEIGHT, 20);
+            U.pressByPoint(P.攻击, 20, P.REF_WIDTH, P.REF_HEIGHT);
             sleep(100);
             if ((i + 1) % 20 === 0) {
-                U.pressByPoint(P.旭日, P.REF_WIDTH, P.REF_HEIGHT, 20);
+                U.pressByPoint(P.旭日, 20, P.REF_WIDTH, P.REF_HEIGHT);
                 sleep(120);
             }
         }
@@ -154,10 +157,11 @@ function swipePercent(x1p, y1p, x2p, y2p, duration) {
 }
 
 
-function enterPhotoModeAndBack(x, y) {
+function enterPhotoModeAndBack() {
     console.log("开启摄影模式");
-    U.clickByPoint([x, y], P.REF_WIDTH, P.REF_HEIGHT);
-    sleep(2000);
+    sleep(500);
+    U.pressByPoint(P.摄影模式, 100, P.REF_WIDTH, P.REF_HEIGHT);
+    sleep(1000);
     console.log("后退");
     swipePercent(0.175, 0.800, 0.175, 1, 3000);
 }
@@ -183,7 +187,7 @@ function main() {
             continue;
         }
 
-        enterPhotoModeAndBack(P.摄影模式[0], P.摄影模式[1]);
+        enterPhotoModeAndBack();
         sleep(500); // 等待界面稳定
         runTaskWithTimeout(taskTimeout);
         sleep(1500); // 等待界面稳定
@@ -215,5 +219,5 @@ function main() {
     }
 }
 
-
 main();
+// enterPhotoModeAndBack();

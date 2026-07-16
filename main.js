@@ -18,7 +18,6 @@ if (!files.exists(path3)) {
 var window = floaty.window(
     <horizontal>
         <button id="storm" text="双风暴挂机-旭日" w="50" h="40" bg="#09ff00" textColor="#ffffff" textSize="10sp"/>
-        <button id="guangyusanse" text="双风暴挂机-广域散射" w="50" h="40" bg="#0091ff" textColor="#ffffff" textSize="10sp"/>
         <button id="mosu" text="刷魔素" w="50" h="40" bg="#00aaee" textColor="#ffffff" textSize="10sp"/>
     </horizontal>
 );
@@ -65,7 +64,6 @@ bindDrag(window.storm, onClick);
 // 给 mosu 按钮绑定拖动和点击
 bindDrag(window.mosu, mosu);
 
-bindDrag(window.guangyusanse, guangyusanse);
 
 
 // 切换脚本运行状态
@@ -88,18 +86,11 @@ window.storm.click(() => {
 window.mosu.click(() => {
     mosu();
 });
-window.guangyusanse.click(() => {
-    guangyusanse();
-});
 
 
 // 双风暴挂机脚本
 function onClick() {
     toggleScript(window.storm, path, '双风暴挂机-旭日', '停止运行');
-}
-// 广域散射脚本
-function guangyusanse() {
-    toggleScript(window.guangyusanse, path2, '双风暴挂机-广域散射', '停止运行');
 }
 // 刷魔素脚本
 function mosu() {
