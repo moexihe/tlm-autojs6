@@ -76,7 +76,7 @@ function tapMagicDevice() {
                 if (matchResult && matchResult.matches && matchResult.matches.length) {
                     let matches = matchResult.matches
                         .sort((a, b) => b.similarity - a.similarity)
-                        .slice(0, 3);
+                        .slice(0, 20); // 取前20个匹配点
                     matches.forEach(match => {
                         console.log(`点击魔导设备: (${match.point.x}, ${match.point.y}), 置信度: ${match.similarity}`);
                         U.pressByPoint([match.point.x, match.point.y], 30, P.REF_WIDTH, P.REF_HEIGHT);
