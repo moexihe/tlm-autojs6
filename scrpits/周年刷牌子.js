@@ -66,7 +66,7 @@ function checkSpecialArena() {
         }
     });
     sleep(500);
-    if(U.ocrRegionCenter(P.跳过[0], P.跳过[1], 500, 500, P.REF_WIDTH, P.REF_HEIGHT).some(t => t && t.includes("跳过"))){
+    if(U.ocrRegionCenter(P.跳过[0], P.跳过[1], P.REF_WIDTH, P.REF_HEIGHT).some(t => t && t.includes("跳过"))){
         U.clickByPoint(P.跳过, P.REF_WIDTH, P.REF_HEIGHT);
     }
 }
