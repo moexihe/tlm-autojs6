@@ -263,6 +263,68 @@ function isPointColor(point, targetColor, tolerance = 20, refWidth, refHeight) {
     return colors.isSimilar(actualColor, targetColor, tolerance);
 }
 
+/**
+ * OCR 识别指定文本并点击其中心（带坐标托底） //[cite: 2]
+ * @param {string} text - 目标文本（如 "锻造"）
+ * @param {Array} fallbackPoint - OCR识别失败时的备用点击坐标 //[cite: 3]
+ */
+function clickText(text, fallbackPoint) {
+    let img = null;
+    try {
+        img = captureScreen(); //[cite: 1, 2]
+        if (!img) throw new Error("截图失败");
+
+        let ocrResult = null;
+        if (typeof gmlkit !== 'undefined') {
+            ocrResult = gmlkit.ocr(img, "zh"); // 优先使用高精度 gmlkit //[cite: 2]
+        } else {
+            ocrResult = ocr(img); //[cite: 2]
+        }
+
+        if (ocrResult) {
+            // 1. 尝试直接精准查找
+            if (typeof ocrResult.find === 'function') {
+                let target = ocrResult.find(3, { text: text });
+                if (target) {
+                    let bounds = target.bounds;
+                    console.log(`OCR 精确找到 [${text}] -> 坐标: (${bounds.centerX()}, ${bounds.centerY()})`);
+                    click(bounds.centerX(), bounds.centerY());
+                    return true;
+                }
+            }
+
+            // 2. 模糊匹配子元素 //[cite: 2]
+            let children = ocrResult.children || ocrResult;
+            if (children && (Array.isArray(children) || typeof children.length === 'number')) {
+                for (let i = 0; i < children.length; i++) {
+                    let child = children[i];
+                    let childText = typeof child === 'string' ? child : (child.text || "");
+                    if (childText && childText.indexOf(text) !== -1) {
+                        if (child.bounds) {
+                            let bounds = child.bounds;
+                            console.log(`OCR 模糊找到 [${text}] (原词: ${childText}) -> 坐标: (${bounds.centerX()}, ${bounds.centerY()})`);
+                            click(bounds.centerX(), bounds.centerY());
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.log("OCR 查找 [" + text + "] 异常: " + e);
+    } finally {
+        if (img) img.recycle(); //[cite: 2]
+    }
+
+    // 3. OCR 识别失败时的托底机制 //[cite: 1]
+    if (fallbackPoint) {
+        console.log(`OCR 未找到 [${text}]，使用托底坐标点击`);
+        U.clickByPoint(fallbackPoint, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 2]
+        return true;
+    }
+    return false;
+}
+
 module.exports = {
     scalePoint,
     clickByPoint,
@@ -276,4 +338,6 @@ module.exports = {
     findimg,
     getPointColor,
     isPointColor,
+    clickText,
 };
+
