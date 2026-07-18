@@ -20,7 +20,7 @@ function attack() {
     console.log("StartPoint", P.起点坐标, "EndPoint", P.终点坐标);
     U.swipeByPoints(P.起点坐标, P.终点坐标, P.REF_WIDTH, P.REF_HEIGHT, 4400);
 
-   
+    let rounds = 0;
     while (!U.ocrRegionCenter(P.跳过[0], P.跳过[1], 500, 200, P.REF_WIDTH, P.REF_HEIGHT).some(t => t && t.includes("跳过"))) {
         if (++rounds > 160) {
             console.log("[战斗] 未识别到跳过按钮，退出战斗循环");
