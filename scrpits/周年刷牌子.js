@@ -20,7 +20,7 @@ function attack() {
     console.log("StartPoint", P.起点坐标, "EndPoint", P.终点坐标);
     U.swipeByPoints(P.起点坐标, P.终点坐标, P.REF_WIDTH, P.REF_HEIGHT, 4400);
 
-    let rounds = 0;
+   
     while (!U.ocrRegionCenter(P.跳过[0], P.跳过[1], 500, 200, P.REF_WIDTH, P.REF_HEIGHT).some(t => t && t.includes("跳过"))) {
         if (++rounds > 160) {
             console.log("[战斗] 未识别到跳过按钮，退出战斗循环");
@@ -56,6 +56,7 @@ function MoveToGame() {
 
 
 function checkSpecialArena() {
+     let rounds = 0;
     console.log("[特殊竞技场] 点击特殊竞技场按钮");
     [P.特殊竞技场受理处].forEach(pt => {
         try {
@@ -65,9 +66,11 @@ function checkSpecialArena() {
             log("[特殊竞技场] click step failed: " + e);
         }
     });
-    sleep(500);
-    if (U.ocrRegionCenter(P.跳过[0], P.跳过[1], 500, 200, P.REF_WIDTH, P.REF_HEIGHT).some(t => t && t.includes("跳过"))) {
+    while (rounds < 5) {
+        let skip = U.ocrRegionCenter(P.跳过[0], P.跳过[1], 500, 200, P.REF_WIDTH, P.REF_HEIGHT) || [];
+        skip = skip.some(t => t && t.includes("跳过"));
         U.clickByPoint(P.跳过, P.REF_WIDTH, P.REF_HEIGHT);
+        rounds++;
     }
 }
 
@@ -131,7 +134,7 @@ function detectScene() {
     }
 
     let specialArenaText = U.ocrRegionCenter(P.特殊竞技场受理处[0], P.特殊竞技场受理处[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
-    if (specialArenaText.some(t => t && t.includes("放弃")) || specialArenaText.some(t => t && t.includes("防卫战"))) {
+    if (specialArenaText.some(t => t && t.includes("放弃")) || specialArenaText.some(t => t && t.includes("下一步"))) {
         return "SPECIAL_ARENA";
     }
 
