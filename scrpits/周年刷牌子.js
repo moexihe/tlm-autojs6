@@ -69,8 +69,11 @@ function checkSpecialArena() {
     while (rounds < 5) {
         sleep(500);
         let skip = U.ocrRegionCenter(P.跳过[0], P.跳过[1], 500, 200, P.REF_WIDTH, P.REF_HEIGHT) || [];
-        skip = skip.some(t => t && t.includes("跳过"));
+        skipText = skip.some(t => t && t.includes("跳过"));
+        if (skipText) {
         U.clickByPoint(P.跳过, P.REF_WIDTH, P.REF_HEIGHT);
+        break;
+        }
         rounds++;
     }
 }
