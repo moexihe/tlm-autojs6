@@ -66,11 +66,11 @@ function checkSpecialArena() {
             log("[特殊竞技场] click step failed: " + e);
         }
     });
-    while (rounds < 5) {
+    while (rounds < 10) {
         sleep(500);
-        let skip = U.ocrRegionCenter(P.跳过[0], P.跳过[1], 500, 200, P.REF_WIDTH, P.REF_HEIGHT) || [];
-        skipText = skip.some(t => t && t.includes("跳过"));
-        if (skipText) {
+        let skipText = U.ocrRegionCenter(P.跳过[0], P.跳过[1], 500, 200, P.REF_WIDTH, P.REF_HEIGHT) || [];
+         skip= skipText.some(t => t && t.includes("跳过"));
+        if (skip) {
         U.clickByPoint(P.跳过, P.REF_WIDTH, P.REF_HEIGHT);
         break;
         }
