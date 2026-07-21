@@ -153,7 +153,7 @@ function detectScene() {
     console.log("[战斗] 检查跳过按钮文字:", skipText);
     let  Crystal = skipText.some(t => t && t.includes("水晶"));
     let  CrystalHP = U.findimg("/storage/emulated/0/脚本/scrpit/images/水晶血量.png");
-    let time = skipText.some(t => t && t.includes("剩余时间"));
+    let time = skipText.some(t => t && t.includes("时间"));
     let enterbattle = (Crystal || CrystalHP) && time;
     console.log("[战斗] 检查跳过按钮结果:", Crystal, "检查水晶血量结果:", CrystalHP, "检查剩余时间结果:", time);
     if (enterbattle)
