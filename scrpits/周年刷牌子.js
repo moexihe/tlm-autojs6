@@ -5,8 +5,8 @@ const P = require("/storage/emulated/0/脚本/scrpit/constant/坐标.js");
 requestScreenCapture();
 function attack() {
     console.log("[战斗] 开始攻击"); ``
-    console.log("战斗开始前等待9s");
-    sleep(9000);
+    console.log("战斗开始前等待5s");
+    sleep(5000);
     U.pressByPoint(P.双风暴, 10, P.REF_WIDTH, P.REF_HEIGHT);
     sleep(500);
     [P.神速, P.神速, P.神速].forEach(pt => {
