@@ -52,6 +52,7 @@ function MoveToGame() {
             log("[主界面] click step failed: " + e);
         }
     });
+    sleep(2000);
 }
 
 
@@ -192,21 +193,18 @@ function handleUnknownScene() {
     console.log("[场景检测] 未知场景，尝试回退/关闭");
 
     let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1],  P.REF_WIDTH, P.REF_HEIGHT) || [];
-    if (closeText.some(t => t && t.includes("关"))|| closeText.some(t => t && t.includes("闭"))) {
+    if (closeText.some(t => t && t.includes("关闭"))|| closeText.some(t => t && t.includes("闭"))) {
         U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
         sleep(1200);
         return;
     }
 
     let backText = U.ocrRegionCenter(P.返回[0], P.返回[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
-    if (backText.some(t => t && t.includes("返")) || backText.some(t => t && t.includes("回"))) {
+    if (backText.some(t => t && t.includes("返回")) || backText.some(t => t && t.includes("回"))) {
         U.clickByPoint(P.返回, P.REF_WIDTH, P.REF_HEIGHT);
         sleep(1200);
         return;
     }
-
-    U.clickByPoint([1276, 754], P.REF_WIDTH, P.REF_HEIGHT);
-    sleep(1200);
 }
 
 function main() {
@@ -238,7 +236,7 @@ function main() {
                 handleUnknownScene();
                 break;
         }
-        sleep(1000);
+        sleep(500);
     }
 }
 
