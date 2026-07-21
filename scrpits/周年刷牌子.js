@@ -77,6 +77,10 @@ function checkSpecialArena() {
         }
         rounds++;
     }
+    if (rounds >= 10) {
+        console.log("[特殊竞技场] 未识别到跳过按钮，尝试点击确认");
+        BackMainPage();
+    }
 }
 
 
