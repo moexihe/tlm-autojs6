@@ -138,7 +138,9 @@ function detectScene() {
     }
 
     let specialArenaText = U.ocrRegionCenter(P.全屏位置[0], P.全屏位置[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
-    if (specialArenaText.some(t => t && t.includes("放弃")) || specialArenaText.some(t => t && t.includes("下一步"))) {
+    let isSpecialArena = specialArenaText.some(t => t && t.includes("放弃")) || specialArenaText.some(t => t && t.includes("下一步"));
+    console.log("[战斗] 检查特殊竞技场文字:", specialArenaText);
+    if (isSpecialArena) {
         return "SPECIAL_ARENA";
     }
 
