@@ -137,7 +137,7 @@ function detectScene() {
         return "READY";
     }
 
-    let specialArenaText = U.ocrRegionCenter(P.特殊竞技场受理处[0], P.特殊竞技场受理处[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
+    let specialArenaText = U.ocrRegionCenter(P.全屏位置[0], P.全屏位置[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
     if (specialArenaText.some(t => t && t.includes("放弃")) || specialArenaText.some(t => t && t.includes("下一步"))) {
         return "SPECIAL_ARENA";
     }
