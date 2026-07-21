@@ -72,7 +72,7 @@ function checkSpecialArena() {
         let skipText = U.ocrRegionCenter(P.跳过[0], P.跳过[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
         let skip= skipText.some(t => t && t.includes("跳过"));
         let skip1= skipText.some(t => t && t.includes("下一步"));
-        if (skip) {
+        if (skip || skip1) {
         U.clickByPoint(P.跳过, P.REF_WIDTH, P.REF_HEIGHT);
         break;
         }
