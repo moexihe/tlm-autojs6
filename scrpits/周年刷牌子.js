@@ -191,14 +191,14 @@ function handleSettlement() {
 function handleUnknownScene() {
     console.log("[场景检测] 未知场景，尝试回退/关闭");
 
-    let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1], 500, 351, P.REF_WIDTH, P.REF_HEIGHT) || [];
+    let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1],  P.REF_WIDTH, P.REF_HEIGHT) || [];
     if (closeText.some(t => t && t.includes("关"))|| closeText.some(t => t && t.includes("闭"))) {
         U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
         sleep(1200);
         return;
     }
 
-    let backText = U.ocrRegionCenter(P.返回[0], P.返回[1], 500, 351, P.REF_WIDTH, P.REF_HEIGHT) || [];
+    let backText = U.ocrRegionCenter(P.返回[0], P.返回[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
     if (backText.some(t => t && t.includes("返")) || backText.some(t => t && t.includes("回"))) {
         U.clickByPoint(P.返回, P.REF_WIDTH, P.REF_HEIGHT);
         sleep(1200);
