@@ -150,7 +150,7 @@ function detectScene() {
     }
 
     let skipText = U.ocrRegionCenter(P.全屏位置[0], P.全屏位置[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
-    console.log("[战斗] 检查跳过按钮文字:", skipText);
+    console.log("[战斗] 检查文字:", skipText);
     let  Crystal = skipText.some(t => t && t.includes("水晶"));
     let  CrystalHP = U.findimg("/storage/emulated/0/脚本/scrpit/images/水晶血量.png");
     let time = skipText.some(t => t && t.includes("时间"));
