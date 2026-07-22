@@ -1,7 +1,7 @@
 auto();
 const U = require("/storage/emulated/0/脚本/scrpit/utils/utils.js");
 const P = require("/storage/emulated/0/脚本/scrpit/constant/坐标.js");
-
+const ocr = require('paddleocr'); // 引入 PaddleOCR 库
 function isHomePage() {
     console.log("检查是否在主页面");
     sleep(1000);
@@ -19,4 +19,7 @@ function isHomePage() {
     // if (skipText.some(t => t && t.includes("水晶")) || U.isMainPage("/storage/emulated/0/脚本/scrpit/images/水晶血量.png") &&
     //     skipText.some(t => t && t.includes("时间"))) {
     // }
- isHomePage();
+
+let test=ocr.paddle.detect()
+ocr.paddle.init()
+console.log(test)
