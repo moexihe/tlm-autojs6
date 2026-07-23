@@ -1,5 +1,5 @@
 auto();
 const U = require("/storage/emulated/0/脚本/scrpit/utils/utils.js");
 const P = require("/storage/emulated/0/脚本/scrpit/constant/坐标.js");
-const mainPageTemplate = "/storage/emulated/0/脚本/scrpit/images/药品/药品0.png";
+const mainPageTemplate = "/storage/emulated/0/脚本/scrpit/images/木材/0.png";
 U.findimg(mainPageTemplate,threshold = 0.7)
