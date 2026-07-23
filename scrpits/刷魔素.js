@@ -25,9 +25,8 @@ function oneSelectSwitch() {
     try {
         var result = U.ocrRegionCenter(P.单选[0], P.单选[1], 400, 400, P.REF_WIDTH, P.REF_HEIGHT) || [];
         if (result.some(t => t && t.includes("单选"))) {
-            U.clickByPoint([P.单选[0], P.单选[1]], P.REF_WIDTH, P.REF_HEIGHT);
             sleep(300);
-
+            U.clickByPoint([P.单选[0], P.单选[1]], P.REF_WIDTH, P.REF_HEIGHT);
             return true;
         }
     } catch (e) {
@@ -116,8 +115,9 @@ function decompositionInterface(maxRetries = 2) {
 					{ text: "素材加工", dx: 0, dy: -50 }
 				];
 				Steps.forEach(Steps => {
+                    sleep(500);
 					U.clickText(Steps.text, Steps.dx, Steps.dy)
-					sleep(500)
+					
 				});
 				var result = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 300, 300, P.REF_WIDTH, P.REF_HEIGHT) || [];
 				console.log("decompositionInterface OCR result:", result);
