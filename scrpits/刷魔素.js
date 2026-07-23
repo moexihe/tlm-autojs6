@@ -186,8 +186,24 @@ function ensureMainPage() {
         if (U.isMainPage(mainPageTemplate)) {
             return true;
         }
-        U.clickByPoint(attempt === 0 ? P.返回 : P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
-        sleep(1200);
+
+        else{
+        console.log("尝试回退/关闭");
+
+        let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
+        if (closeText.some(t => t && t.includes("关闭")) || closeText.some(t => t && t.includes("闭"))) {
+            U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
+            sleep(1200);
+            return;
+        }
+
+        let backText = U.ocrRegionCenter(P.返回[0], P.返回[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
+        if (backText.some(t => t && t.includes("返回")) || backText.some(t => t && t.includes("回"))) {
+            U.clickByPoint(P.返回, P.REF_WIDTH, P.REF_HEIGHT);
+            sleep(1200);
+            return;
+        }
+        }
     }
     return U.isMainPage(mainPageTemplate);
 }
