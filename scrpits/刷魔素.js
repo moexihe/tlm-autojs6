@@ -23,6 +23,7 @@ if (!safeRequestScreenCapture()) {
 
 function oneSelectSwitch() {
     try {
+        sleep(1000)
        var step={ text: "单选", dx: 10, dy: -50 }
        U.clickText(step);
     } catch (e) {
