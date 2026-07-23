@@ -119,6 +119,7 @@ function decompositionInterface(maxRetries = 2) {
                     { text: "大师", dx: 0, dy: 0 },
                     { text: "素材加工", dx: 0, dy: -50 }
                 ];
+                var Steps1=[P.返回,P.选单,P.角色,P.技能,P.使用特殊技能,P.锻造大师,P.素材加工]
                 Steps.forEach(Steps => {
                     sleep(500);
                     U.clickText(Steps.text, Steps.dx, Steps.dy)
