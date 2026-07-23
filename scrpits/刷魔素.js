@@ -180,29 +180,27 @@ function enterPhotoModeAndBack() {
     swipePercent(0.175, 0.800, 0.175, 1, 3000);
 }
 
-function ensureMainPage() {
+function ensureMainPage(maxRetries = 2) {
     const mainPageTemplate = "/storage/emulated/0/脚本/scrpit/images/商店.png";
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
         if (U.isMainPage(mainPageTemplate)) {
             return true;
-        }
+        } else {
+            console.log("尝试回退/关闭");
 
-        else{
-        console.log("尝试回退/关闭");
+            let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1], 200, 100, P.REF_WIDTH, P.REF_HEIGHT) || [];
+            if (closeText.some(t => t.includes("关闭") || t.includes("闭"))) {
+                U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
+                sleep(1200);
+                continue;
+            }
 
-        let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
-        if (closeText.some(t => t && t.includes("关闭")) || closeText.some(t => t && t.includes("闭"))) {
-            U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
-            sleep(1200);
-            return;
-        }
-
-        let backText = U.ocrRegionCenter(P.返回[0], P.返回[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
-        if (backText.some(t => t && t.includes("返回")) || backText.some(t => t && t.includes("回"))) {
-            U.clickByPoint(P.返回, P.REF_WIDTH, P.REF_HEIGHT);
-            sleep(1200);
-            return;
-        }
+            let backText = U.ocrRegionCenter(P.返回[0], P.返回[1], 200, 100, P.REF_WIDTH, P.REF_HEIGHT) || [];
+            if (backText.some(t => t.includes("返回") || t.includes("回"))) {
+                U.clickByPoint(P.返回, P.REF_WIDTH, P.REF_HEIGHT);
+                sleep(1200);
+                continue;
+            }
         }
     }
     return U.isMainPage(mainPageTemplate);
