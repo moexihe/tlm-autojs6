@@ -62,7 +62,7 @@ function tappt() {
                             var y = match.point.y;
                             console.log(`点击素材: (${x}, ${y}), 相似度: ${match.similarity}`);
                             U.pressByPoint([x, y], 30, P.REF_WIDTH, P.REF_HEIGHT);
-                            sleepRandom(120, 200);
+                            sleep(120);
                         });
                         clickSteps([P.开始加工, P.确认, P.领取点数, P.领取点数之后]);
                         break; // 当前模板匹配成功，跳到下一个模板
