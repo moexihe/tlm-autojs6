@@ -137,7 +137,7 @@ function decompositionInterface(maxRetries = 2) {
 
 function runTaskWithTimeout(timeoutMs = 5 * 60 * 1000) {
     let start = Date.now();
-    console.log("开始执行任务，超时时间(ms):", timeoutMs, "开始时间:", start);
+    console.log("开始执行任务，超时时间(ms):", timeoutMs, "开始时间:", start.toString());
     while (Date.now() - start < timeoutMs) {
         U.pressByPoint(P.神速, 30, P.REF_WIDTH, P.REF_HEIGHT);
         for (let i = 0; i < 150; i++) {
