@@ -81,6 +81,6 @@ function tappt() {
             try { template && template.recycle(); } catch (e) { }
         }
     }
-    return true;
+    return foundAny;
 }
 tappt();

@@ -89,6 +89,7 @@ function tappt() {
     }
 
     // 遍历每个图片模板并尝试匹配点击
+    var foundAny = false;
     for (var i = 0; i < fileList.length; i++) {
         var templatePath = fileList[i];
         var template = null;
@@ -118,6 +119,7 @@ function tappt() {
                             U.pressByPoint([x, y], 30, P.REF_WIDTH, P.REF_HEIGHT);
                             sleepRandom(120, 200);
                         });
+                        foundAny = true;
                         clickSteps([P.开始加工, P.确认, P.领取点数, P.领取点数之后]);
                         break; // 当前模板匹配成功，跳到下一个模板
                     }
@@ -135,7 +137,7 @@ function tappt() {
             try { template && template.recycle(); } catch (e) { }
         }
     }
-    return true;
+    return foundAny;
 }
 
 function decompositionInterface(maxRetries = 2) {
