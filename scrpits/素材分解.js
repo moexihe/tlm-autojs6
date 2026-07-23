@@ -123,7 +123,7 @@ function tappt() {
                         clickSteps([P.开始加工, P.确认, P.领取点数, P.领取点数之后]);
                         break; // 当前模板匹配成功，跳到下一个模板
                     }
-                    toast(`未识别到 ${templatePath}，重试 ${attempt}/3`);
+                    console.log(`未识别到 ${templatePath}，重试 ${attempt}/3`);
                 } catch (e) {
                     log("tappt error: " + e);
                 } finally {
