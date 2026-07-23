@@ -142,10 +142,26 @@ function decompositionInterface(maxRetries = 2) {
             }
         } catch (e) {
             log("decompositionInterface error: " + e);
+        } finally {
+
+            console.log("尝试回退/关闭");
+
+            let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1], 200, 100, P.REF_WIDTH, P.REF_HEIGHT) || [];
+            if (closeText.some(t => t.includes("关闭") || t.includes("闭"))) {
+                U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
+                sleep(1200);
+                continue;
+            }
+
+            let backText = U.ocrRegionCenter(P.返回[0], P.返回[1], 200, 100, P.REF_WIDTH, P.REF_HEIGHT) || [];
+            if (backText.some(t => t.includes("返回") || t.includes("回"))) {
+                U.clickByPoint(P.返回, P.REF_WIDTH, P.REF_HEIGHT);
+                sleep(1200);
+                continue;
+            }
         }
-        U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
-        sleep(800);
     }
+
     toast("进入分解界面失败");
     return false;
 }
