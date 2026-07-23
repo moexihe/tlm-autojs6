@@ -60,12 +60,29 @@ function clickSteps(steps, delay = 900) {
 function tappt() {
     var dir = "/storage/emulated/0/脚本/scrpit/images/素材/";
 
-    // 列出目录下所有图片文件
-    var fileList = files.listDir(dir) || [];
-    fileList = fileList.filter(function (name) {
-        return /\.(png|jpg|jpeg)$/i.test(name);
-    });
+    // 递归列出目录下所有图片文件（返回完整路径）
+    function listImageFilesRecursive(baseDir) {
+        var res = [];
+        var list = files.listDir(baseDir) || [];
+        for (var j = 0; j < list.length; j++) {
+            var name = list[j];
+            var path = baseDir + name;
+            try {
+                if (files.isDir(path)) {
+                    // 确保子目录路径以 / 结尾
+                    var subdir = path.endsWith('/') ? path : path + '/';
+                    res = res.concat(listImageFilesRecursive(subdir));
+                } else if (/\.(png|jpg|jpeg)$/i.test(name)) {
+                    res.push(path);
+                }
+            } catch (e) {
+                log('listImageFilesRecursive error: ' + e);
+            }
+        }
+        return res;
+    }
 
+    var fileList = listImageFilesRecursive(dir);
     if (fileList.length === 0) {
         toast("素材目录为空: " + dir);
         return false;
@@ -73,7 +90,7 @@ function tappt() {
 
     // 遍历每个图片模板并尝试匹配点击
     for (var i = 0; i < fileList.length; i++) {
-        var templatePath = dir + fileList[i];
+        var templatePath = fileList[i];
         var template = null;
         try {
             template = images.read(templatePath);
@@ -89,7 +106,7 @@ function tappt() {
                     if (!img) throw new Error("captureScreen returned null");
 
                     let matchResult = images.matchTemplate(img, template, { threshold: 0.80, max: 100 });
-                    console.log("tappt match result for " + fileList[i] + ":", matchResult && matchResult.matches ? matchResult.matches.length : 0);
+                    console.log("tappt match result for " + templatePath + ":", matchResult && matchResult.matches ? matchResult.matches.length : 0);
                     if (matchResult && matchResult.matches && matchResult.matches.length) {
                         let matches = matchResult.matches
                             .sort((a, b) => b.similarity - a.similarity)
@@ -104,7 +121,7 @@ function tappt() {
                         clickSteps([P.开始加工, P.确认, P.领取点数, P.领取点数之后]);
                         break; // 当前模板匹配成功，跳到下一个模板
                     }
-                    toast(`未识别到 ${fileList[i]}，重试 ${attempt}/3`);
+                    toast(`未识别到 ${templatePath}，重试 ${attempt}/3`);
                 } catch (e) {
                     log("tappt error: " + e);
                 } finally {
