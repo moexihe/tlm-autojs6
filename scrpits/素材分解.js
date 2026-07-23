@@ -122,9 +122,6 @@ function decompositionInterface(maxRetries = 2) {
         try {
             if (U.isMainPage(mainPageTemplate)) {
                 var Steps = [
-                    { text: "返回", dx: 0, dy: 0 },
-                    { text: "选单", dx: 0, dy: 0 },
-                    { text: "角色", dx: 10, dy: -50 },
                     { text: "技能", dx: 0, dy: 0 },
                     { text: "使用特殊技能", dx: 0, dy: 0 },
                     { text: "大师", dx: 0, dy: 0 },
