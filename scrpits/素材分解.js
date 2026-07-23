@@ -291,5 +291,6 @@ function main() {
     }
 }
 
-main();
+// main();
 // enterPhotoModeAndBack();
+tappt();
