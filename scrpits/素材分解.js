@@ -1,8 +1,8 @@
 auto();
 const U = require("/storage/emulated/0/脚本/scrpit/utils/utils.js");
 const P = require("/storage/emulated/0/脚本/scrpit/constant/坐标.js");
-toast("刷魔素脚本开始");
-console.log("刷魔素脚本启动");
+toast("素材分解开始");
+console.log("素材分解启动");
 // 更稳健的屏幕截取，带重试和失败提示
 function safeRequestScreenCapture(maxAttempts = 3) {
     for (let i = 0; i < maxAttempts; i++) {
@@ -52,52 +52,68 @@ function clickSteps(steps, delay = 900) {
     });
 }
 
-function tapMagicDevice() {
-    const templatePath = "/storage/emulated/0/脚本/scrpit/images/魔导.png";
-    if (!files.exists(templatePath)) {
-        toast("模板图片不存在: 魔导.png");
+function tappt() {
+    var dir = "/storage/emulated/0/脚本/scrpit/images/素材/";
+
+    // 列出目录下所有图片文件
+    var fileList = files.listDir(dir) || [];
+    fileList = fileList.filter(function (name) {
+        return /\.(png|jpg|jpeg)$/i.test(name);
+    });
+
+    if (fileList.length === 0) {
+        toast("素材目录为空: " + dir);
         return false;
     }
 
-    let template = null;
-    try {
-        template = images.read(templatePath);
-        if (!template) throw new Error("template read failed");
-
-        for (let attempt = 1; attempt <= 3; attempt++) {
-            let img = null;
-            try {
-                img = captureScreen();
-                if (!img) throw new Error("captureScreen returned null");
-
-                let matchResult = images.matchTemplate(img, template, { threshold: 0.80, max: 100 });
-                console.log("tapMagicDevice match result:", matchResult.matches);
-                if (matchResult && matchResult.matches && matchResult.matches.length) {
-                    let matches = matchResult.matches
-                        .sort((a, b) => b.similarity - a.similarity)
-                        .slice(0, 20); // 取前20个匹配点
-                    matches.forEach(match => {
-                        console.log(`点击魔导设备: (${match.point.x}, ${match.point.y}), 置信度: ${match.similarity}`);
-                        U.pressByPoint([match.point.x, match.point.y], 30, P.REF_WIDTH, P.REF_HEIGHT);
-                        sleepRandom(120, 200);
-                    });
-                    clickSteps([P.开始加工, P.确认, P.领取点数, P.领取点数之后]);
-                    return true;
-                }
-                toast(`未识别到魔导设备，重试 ${attempt}/3`);
-            } catch (e) {
-                log("tapMagicDevice error: " + e);
-            } finally {
-                try { img && img.recycle(); } catch (e) { }
+    // 遍历每个图片模板并尝试匹配点击
+    for (var i = 0; i < fileList.length; i++) {
+        var templatePath = dir + fileList[i];
+        var template = null;
+        try {
+            template = images.read(templatePath);
+            if (!template) {
+                log("读取模板失败: " + templatePath);
+                continue;
             }
-            sleep(500);
+
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                let img = null;
+                try {
+                    img = captureScreen();
+                    if (!img) throw new Error("captureScreen returned null");
+
+                    let matchResult = images.matchTemplate(img, template, { threshold: 0.80, max: 100 });
+                    console.log("tappt match result for " + fileList[i] + ":", matchResult && matchResult.matches ? matchResult.matches.length : 0);
+                    if (matchResult && matchResult.matches && matchResult.matches.length) {
+                        let matches = matchResult.matches
+                            .sort((a, b) => b.similarity - a.similarity)
+                            .slice(0, 20); // 取前20个匹配点
+                        matches.forEach(match => {
+                            var x = match.point.x;
+                            var y = match.point.y;
+                            console.log(`点击素材: (${x}, ${y}), 相似度: ${match.similarity}`);
+                            U.pressByPoint([x, y], 30, P.REF_WIDTH, P.REF_HEIGHT);
+                            sleepRandom(120, 200);
+                        });
+                        clickSteps([P.开始加工, P.确认, P.领取点数, P.领取点数之后]);
+                        break; // 当前模板匹配成功，跳到下一个模板
+                    }
+                    toast(`未识别到 ${fileList[i]}，重试 ${attempt}/3`);
+                } catch (e) {
+                    log("tappt error: " + e);
+                } finally {
+                    try { img && img.recycle(); } catch (e) { }
+                }
+                sleep(500);
+            }
+        } catch (e) {
+            log("tappt init error: " + e);
+        } finally {
+            try { template && template.recycle(); } catch (e) { }
         }
-    } catch (e) {
-        log("tapMagicDevice init error: " + e);
-    } finally {
-        try { template && template.recycle(); } catch (e) { }
     }
-    return false;
+    return true;
 }
 
 function decompositionInterface(maxRetries = 2) {
@@ -217,7 +233,7 @@ function main() {
 
         while (true) {
             try {
-                if (!tapMagicDevice()) {
+                if (!tappt()) {
                     break; // 如果未识别到魔导设备，退出循环
                 }
                 sleepRandom(600, 1000);
