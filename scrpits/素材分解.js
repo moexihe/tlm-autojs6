@@ -121,7 +121,7 @@ function tappt() {
                         });
                         foundAny = true;
                         clickSteps([P.开始加工, P.确认, P.领取点数, P.领取点数之后]);
-                        break; // 当前模板匹配成功，跳到下一个模板
+                        continue; // 当前模板匹配成功，跳到下一个模板
                     }
                     console.log(`未识别到 ${templatePath}，重试 ${attempt}/3`);
                 } catch (e) {
@@ -282,7 +282,7 @@ function main() {
         while (true) {
             try {
                 if (!tappt()) {
-                    break; // 如果未识别到魔导设备，退出循环
+                    break; // 如果未识别到，退出循环
                 }
                 sleepRandom(600, 1000);
             } catch (e) {
