@@ -1,3 +1,18 @@
+/**
+ * 检查并重新申请截图权限
+ * @param {Error} e - 捕获到的异常对象
+ * @returns {boolean} 是否已重新申请
+ */
+function ensureScreenCapture(e) {
+    if (e && e.message && e.message.indexOf("captureScreen failed") !== -1) {
+        toastLog("截图权限丢失，尝试重新申请...");
+        // 重新申请权限
+        return requestScreenCapture();
+    }
+    return false;
+}
+
+
 // 按比例换算坐标
 function scalePoint(point, refWidth, refHeight) {
     var w = device.width;
@@ -81,15 +96,9 @@ function ocrRegionPercent(x, y, w, h, refWidth, refHeight) {
         img.recycle();
         return results;
     } catch (e) {
-        console.log("ocrRegionPercent error: " + e);
-        if (e.message.indexOf("non-current MediaProjection") !== -1) {
-            toastLog("截图权限丢失，尝试重新申请...");
-            // 重新申请权限
-            requestScreenCapture();
-        } else {
-            console.error(e);
-        }
-        return [];
+        ensureScreenCapture(e);
+        } finally {
+        if (img) img.recycle(); //[cite: 2]
     }
 }
 
@@ -134,16 +143,11 @@ function ocrRegionCenter(x, y, w, h, refWidth, refHeight) {
         return results;
     } catch (e) {
         console.log("ocrRegionCenter error: " + e);
-        if (e.message.indexOf("non-current MediaProjection") !== -1) {
-            toastLog("截图权限丢失，尝试重新申请...");
-            // 重新申请权限
-            requestScreenCapture();
-        } else {
-            console.error(e);
-        }
-        return [];
+       ensureScreenCapture(e);
     }
-
+    finally {
+        if (img) img.recycle(); //[cite: 2]
+    }
 }
 
 function ocrFullScreen() {
@@ -174,17 +178,10 @@ function isMainPage(templatePath, threshold = 0.8) {
 
         let matchResult = images.matchTemplate(img, template, { threshold: threshold, max: 1 });
         console.log("isMainPage match result:", matchResult.matches);
+        img.recycle();
         return matchResult && matchResult.matches && matchResult.matches.length > 0;
     } catch (e) {
-        console.log("isMainPage error: " + e);
-        if (e.message.indexOf("non-current MediaProjection") !== -1) {
-            toastLog("截图权限丢失，尝试重新申请...");
-            // 重新申请权限
-            requestScreenCapture();
-        } else {
-            console.error(e);
-        }
-        return false;
+            ensureScreenCapture(e);
     } finally {
         try { template && template.recycle(); } catch (e) { }
         try { img && img.recycle(); } catch (e) { }
@@ -219,15 +216,7 @@ function findimg(templatePath, threshold = 0.7) {
         console.log("findimg match result:", matchResult.matches);
         return matchResult && matchResult.matches && matchResult.matches.length > 0;
     } catch (e) {
-        console.log("findimg error: " + e);
-        if (e.message.indexOf("non-current MediaProjection") !== -1) {
-            toastLog("截图权限丢失，尝试重新申请...");
-            // 重新申请权限
-            requestScreenCapture();
-        } else {
-            console.error(e);
-        }
-        return false;
+            ensureScreenCapture(e);
     } finally {
         try { template && template.recycle(); } catch (e) { }
         try { img && img.recycle(); } catch (e) { }
@@ -256,6 +245,9 @@ function getPointColor(point, refWidth, refHeight) {
             console.error(e);
         }
     }
+    finally {
+        if (img) img.recycle(); //[cite: 2]
+    }
 }
 
 function isPointColor(point, targetColor, tolerance = 20, refWidth, refHeight) {
@@ -266,63 +258,50 @@ function isPointColor(point, targetColor, tolerance = 20, refWidth, refHeight) {
 /**
  * OCR 识别指定文本并点击其中心（带坐标托底） //[cite: 2]
  * @param {string} text - 目标文本（如 "锻造"）
- * @param {Array} fallbackPoint - OCR识别失败时的备用点击坐标 //[cite: 3]
  */
-function clickText(text, fallbackPoint) {
-    let img = null;
+function clickText(text, offsetX = 0, offsetY = 0) {
+    let rawImg, grayImg;
     try {
-        img = captureScreen(); //[cite: 1, 2]
-        if (!img) throw new Error("截图失败");
+        rawImg = captureScreen();
+        grayImg = images.grayscale(rawImg);
 
-        let ocrResult = null;
-        if (typeof gmlkit !== 'undefined') {
-            ocrResult = gmlkit.ocr(img, "zh"); // 优先使用高精度 gmlkit //[cite: 2]
+        // 多个阈值候选
+        let thresholds = [120, 150, 180, 200];
+        let target = null;
+
+        for (let t of thresholds) {
+            let binImg = images.threshold(grayImg, t, 255, "BINARY");
+            let results = ocr.detect(binImg);
+
+            let found = results.find(item => item.text.includes(text));
+            if (found && found.bounds) {
+                target = found;
+                binImg.recycle();
+                break; // 找到就停止
+            }
+            binImg.recycle();
+        }
+
+        if (target && target.bounds) {
+            let x = target.bounds.centerX() + offsetX;
+            let y = target.bounds.centerY() + offsetY;
+            if (typeof x === "number" && typeof y === "number") {
+                click(x, y);
+                console.log(`成功点击 "${text}"，坐标: (${x}, ${y})`);
+            } else {
+                console.log(`坐标无效: ${text}`);
+            }
         } else {
-            ocrResult = ocr(img); //[cite: 2]
+            console.log(`未找到文字: ${text}`);
         }
 
-        if (ocrResult) {
-            // 1. 尝试直接精准查找
-            if (typeof ocrResult.find === 'function') {
-                let target = ocrResult.find(3, { text: text });
-                if (target) {
-                    let bounds = target.bounds;
-                    console.log(`OCR 精确找到 [${text}] -> 坐标: (${bounds.centerX()}, ${bounds.centerY()})`);
-                    click(bounds.centerX(), bounds.centerY());
-                    return true;
-                }
-            }
-
-            // 2. 模糊匹配子元素 //[cite: 2]
-            let children = ocrResult.children || ocrResult;
-            if (children && (Array.isArray(children) || typeof children.length === 'number')) {
-                for (let i = 0; i < children.length; i++) {
-                    let child = children[i];
-                    let childText = typeof child === 'string' ? child : (child.text || "");
-                    if (childText && childText.indexOf(text) !== -1) {
-                        if (child.bounds) {
-                            let bounds = child.bounds;
-                            console.log(`OCR 模糊找到 [${text}] (原词: ${childText}) -> 坐标: (${bounds.centerX()}, ${bounds.centerY()})`);
-                            click(bounds.centerX(), bounds.centerY());
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
     } catch (e) {
-        console.log("OCR 查找 [" + text + "] 异常: " + e);
+            ensureScreenCapture(e);
+    
     } finally {
-        if (img) img.recycle(); //[cite: 2]
+        if (grayImg) grayImg.recycle();
+        if (rawImg) rawImg.recycle();
     }
-
-    // 3. OCR 识别失败时的托底机制 //[cite: 1]
-    if (fallbackPoint) {
-        console.log(`OCR 未找到 [${text}]，使用托底坐标点击`);
-        U.clickByPoint(fallbackPoint, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 2]
-        return true;
-    }
-    return false;
 }
 
 module.exports = {

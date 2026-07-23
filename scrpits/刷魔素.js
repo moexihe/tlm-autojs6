@@ -23,7 +23,7 @@ if (!safeRequestScreenCapture()) {
 
 function oneSelectSwitch() {
     try {
-        var result = U.ocrRegionCenter(P.单选[0], P.单选[1],400,400, P.REF_WIDTH, P.REF_HEIGHT) || [];
+        var result = U.ocrRegionCenter(P.单选[0], P.单选[1], 400, 400, P.REF_WIDTH, P.REF_HEIGHT) || [];
         if (result.some(t => t && t.includes("单选"))) {
             U.clickByPoint([P.单选[0], P.单选[1]], P.REF_WIDTH, P.REF_HEIGHT);
             sleep(300);
@@ -102,29 +102,37 @@ function tapMagicDevice() {
 }
 
 function decompositionInterface(maxRetries = 2) {
-    const mainPageTemplate = "/storage/emulated/0/脚本/scrpit/images/商店.png";
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-            if (U.isMainPage(mainPageTemplate)) {
-                clickSteps([P.选单, P.角色, P.技能, P.使用特殊技能, P.锻造大师技能未学汪, P.素材加工], 1000);
-            } else {
-                clickSteps([P.返回, P.选单, P.角色, P.技能, P.使用特殊技能未学汪, P.锻造大师技能, P.素材加工], 1000);
-            }
-            sleep(800);
-            var result = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 300,300,P.REF_WIDTH, P.REF_HEIGHT) || [];
-            console.log("decompositionInterface OCR result:", result);
-            if (result.some(t => t && t.includes("开始加工"))) {
-                toast("进入成功");
-                return true;
-            }
-        } catch (e) {
-            log("decompositionInterface error: " + e);
-        }
-        U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
-        sleep(800);
-    }
-    toast("进入分解界面失败");
-    return false;
+	const mainPageTemplate = "/storage/emulated/0/脚本/scrpit/images/商店.png";
+	for (let attempt = 0; attempt <= maxRetries; attempt++) {
+		try {
+			if (U.isMainPage(mainPageTemplate)) {
+				var Steps = [
+					{ text: "选单", dx: 0, dy: 0 },
+					{ text: "角色", dx: 10, dy: -50 },
+					{ text: "技能", dx: 0, dy:	0 },
+					{ text: "使用特殊技能", dx: 0, dy: 0 },
+					{ text: "大师", dx: 0, dy: 0 },
+					{ text: "素材加工", dx: 0, dy: -50 }
+				];
+				Steps.forEach(Steps => {
+					U.clickText(Steps.text, Steps.dx, Steps.dy)
+					sleep(500)
+				});
+				var result = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 300, 300, P.REF_WIDTH, P.REF_HEIGHT) || [];
+				console.log("decompositionInterface OCR result:", result);
+				if (result.some(t => t && t.includes("开始加工"))) {
+					toast("进入成功");
+					return true;
+				}
+			}
+		} catch (e) {
+			log("decompositionInterface error: " + e);
+		}
+		U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
+		sleep(800);
+	}
+	toast("进入分解界面失败");
+	return false;
 }
 
 function runTaskWithTimeout(timeoutMs = 5 * 60 * 1000) {
