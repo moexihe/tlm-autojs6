@@ -24,7 +24,7 @@ if (!safeRequestScreenCapture()) {
 function oneSelectSwitch() {
     try {
         sleep(1000)
-       var step={ text: "单选", dx: 10, dy: -50 }
+       var step=[{ text: "单选", dx: 10, dy: -50 }]
        U.clickText(step);
     } catch (e) {
         // ocr 可能失败，记录并返回 false
