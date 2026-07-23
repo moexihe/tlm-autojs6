@@ -25,7 +25,12 @@ function oneSelectSwitch() {
     try {
         sleep(1000)
        var step=[{ text: "单选", dx: 10, dy: -50 }]
-       U.clickText(step);
+        U.clickText(step);
+        if(U.ocrRegionCenter(P.单选[0],P.单选[1],500,500, P.REF_WIDTH, P.REF_HEIGHT).some(t => t && t.includes("单选")))
+        {
+            sleep(1000)
+            U.pressByPoint(P.单选,100,P.REF_WIDTH,P.REF_HEIGHT)
+        }    
     } catch (e) {
         // ocr 可能失败，记录并返回 false
         log("oneSelectSwitch ocr error: " + e);
