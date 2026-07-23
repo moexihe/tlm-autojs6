@@ -119,6 +119,7 @@ function decompositionInterface(maxRetries = 2) {
 					U.clickText(Steps.text, Steps.dx, Steps.dy)
 					
 				});
+                sleep(1000)
 				var result = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 300, 300, P.REF_WIDTH, P.REF_HEIGHT) || [];
 				console.log("decompositionInterface OCR result:", result);
 				if (result.some(t => t && t.includes("开始加工"))) {
