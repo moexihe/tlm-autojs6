@@ -23,12 +23,8 @@ if (!safeRequestScreenCapture()) {
 
 function oneSelectSwitch() {
     try {
-        var result = U.ocrRegionCenter(P.单选[0], P.单选[1], 400, 400, P.REF_WIDTH, P.REF_HEIGHT) || [];
-        if (result.some(t => t && t.includes("单选"))) {
-            sleep(300);
-            U.clickByPoint([P.单选[0], P.单选[1]], P.REF_WIDTH, P.REF_HEIGHT);
-            return true;
-        }
+       var step={ text: "单选", dx: 10, dy: -50 }
+       U.clickText(step);
     } catch (e) {
         // ocr 可能失败，记录并返回 false
         log("oneSelectSwitch ocr error: " + e);
