@@ -1,8 +1,8 @@
 auto();
 const U = require("/storage/emulated/0/脚本/scrpit/utils/utils.js");
 const P = require("/storage/emulated/0/脚本/scrpit/constant/坐标.js");
-toast("素材分解开始");
-console.log("素材分解启动");
+toast("刷魔素脚本开始");
+console.log("刷魔素脚本启动");
 // 更稳健的屏幕截取，带重试和失败提示
 function safeRequestScreenCapture(maxAttempts = 3) {
     for (let i = 0; i < maxAttempts; i++) {
@@ -23,11 +23,16 @@ if (!safeRequestScreenCapture()) {
 
 function oneSelectSwitch() {
     try {
-        var result = U.ocrRegionCenter(P.单选[0], P.单选[1], 400, 400, P.REF_WIDTH, P.REF_HEIGHT) || [];
-        if (result.some(t => t && t.includes("单选"))) {
-            sleep(300);
-            U.clickByPoint([P.单选[0], P.单选[1]], P.REF_WIDTH, P.REF_HEIGHT);
-            return true;
+        sleep(1000)
+        var step = [{ text: "单选", dx: 10, dy: -50 }]
+        step.forEach(Steps => {
+            sleep(500);
+            U.clickText(Steps.text, Steps.dx, Steps.dy)
+
+        });;
+        if (U.ocrRegionCenter(P.单选[0], P.单选[1], P.REF_WIDTH, P.REF_HEIGHT).some(t => t && t.includes("单选"))) {
+            sleep(1000)
+            U.pressByPoint(P.单选, 100, P.REF_WIDTH, P.REF_HEIGHT)
         }
     } catch (e) {
         // ocr 可能失败，记录并返回 false
@@ -122,7 +127,7 @@ function decompositionInterface(maxRetries = 2) {
         try {
             if (U.isMainPage(mainPageTemplate)) {
                 var Steps = [
-                    { text: "技能", dx: 0, dy: 0 },
+                    { text: "技能", dx: 0, dy: -50 },
                     { text: "使用特殊技能", dx: 0, dy: 0 },
                     { text: "大师", dx: 0, dy: 0 },
                     { text: "素材加工", dx: 0, dy: -50 }
@@ -132,6 +137,8 @@ function decompositionInterface(maxRetries = 2) {
                     U.clickText(Steps.text, Steps.dx, Steps.dy)
 
                 });
+                // var Steps1=[P.返回,P.选单,P.角色,P.技能,P.使用特殊技能,P.锻造大师,P.素材加工]
+                // Steps1.clickSteps
                 sleep(1000)
                 var result = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 300, 300, P.REF_WIDTH, P.REF_HEIGHT) || [];
                 console.log("decompositionInterface OCR result:", result);
@@ -142,26 +149,21 @@ function decompositionInterface(maxRetries = 2) {
             }
         } catch (e) {
             log("decompositionInterface error: " + e);
-        } finally {
+        }
+        let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1], 200, 100, P.REF_WIDTH, P.REF_HEIGHT) || [];
+        if (closeText.some(t => t.includes("关闭") || t.includes("闭"))) {
+            U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
+            sleep(1200);
+            continue;
+        }
 
-            console.log("尝试回退/关闭");
-
-            let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1], 200, 100, P.REF_WIDTH, P.REF_HEIGHT) || [];
-            if (closeText.some(t => t.includes("关闭") || t.includes("闭"))) {
-                U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
-                sleep(1200);
-                continue;
-            }
-
-            let backText = U.ocrRegionCenter(P.返回[0], P.返回[1], 200, 100, P.REF_WIDTH, P.REF_HEIGHT) || [];
-            if (backText.some(t => t.includes("返回") || t.includes("回"))) {
-                U.clickByPoint(P.返回, P.REF_WIDTH, P.REF_HEIGHT);
-                sleep(1200);
-                continue;
-            }
+        let backText = U.ocrRegionCenter(P.返回[0], P.返回[1], 200, 100, P.REF_WIDTH, P.REF_HEIGHT) || [];
+        if (backText.some(t => t.includes("返回") || t.includes("回"))) {
+            U.clickByPoint(P.返回, P.REF_WIDTH, P.REF_HEIGHT);
+            sleep(1200);
+            continue;
         }
     }
-
     toast("进入分解界面失败");
     return false;
 }
@@ -205,14 +207,28 @@ function enterPhotoModeAndBack() {
     swipePercent(0.175, 0.800, 0.175, 1, 3000);
 }
 
-function ensureMainPage() {
+function ensureMainPage(maxRetries = 2) {
     const mainPageTemplate = "/storage/emulated/0/脚本/scrpit/images/商店.png";
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
         if (U.isMainPage(mainPageTemplate)) {
             return true;
+        } else {
+            console.log("尝试回退/关闭");
+
+            let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1], 200, 100, P.REF_WIDTH, P.REF_HEIGHT) || [];
+            if (closeText.some(t => t.includes("关闭") || t.includes("闭"))) {
+                U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
+                sleep(1200);
+                continue;
+            }
+
+            let backText = U.ocrRegionCenter(P.返回[0], P.返回[1], 200, 100, P.REF_WIDTH, P.REF_HEIGHT) || [];
+            if (backText.some(t => t.includes("返回") || t.includes("回"))) {
+                U.clickByPoint(P.返回, P.REF_WIDTH, P.REF_HEIGHT);
+                sleep(1200);
+                continue;
+            }
         }
-        U.clickByPoint(attempt === 0 ? P.返回 : P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
-        sleep(1200);
     }
     return U.isMainPage(mainPageTemplate);
 }
