@@ -110,21 +110,22 @@ function decompositionInterface(maxRetries = 2) {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
             if (U.isMainPage(mainPageTemplate)) {
-                var Steps = [
-                    { text: "返回", dx: 0, dy: 0 },
-                    { text: "选单", dx: 0, dy: 0 },
-                    { text: "角色", dx: 10, dy: -50 },
-                    { text: "技能", dx: 0, dy: 0 },
-                    { text: "使用特殊技能", dx: 0, dy: 0 },
-                    { text: "大师", dx: 0, dy: 0 },
-                    { text: "素材加工", dx: 0, dy: -50 }
-                ];
-                var Steps1=[P.返回,P.选单,P.角色,P.技能,P.使用特殊技能,P.锻造大师,P.素材加工]
-                Steps.forEach(Steps => {
-                    sleep(500);
-                    U.clickText(Steps.text, Steps.dx, Steps.dy)
+                // var Steps = [
+                //     { text: "返回", dx: 0, dy: 0 },
+                //     { text: "选单", dx: 0, dy: 0 },
+                //     { text: "角色", dx: 10, dy: -50 },
+                //     { text: "技能", dx: 0, dy: 0 },
+                //     { text: "使用特殊技能", dx: 0, dy: 0 },
+                //     { text: "大师", dx: 0, dy: 0 },
+                //     { text: "素材加工", dx: 0, dy: -50 }
+                // ];
+                // Steps.forEach(Steps => {
+                //     sleep(500);
+                //     U.clickText(Steps.text, Steps.dx, Steps.dy)
 
-                });
+                // });
+                var Steps1=[P.返回,P.选单,P.角色,P.技能,P.使用特殊技能,P.锻造大师,P.素材加工]
+                Steps1.clickSteps
                 sleep(1000)
                 var result = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 300, 300, P.REF_WIDTH, P.REF_HEIGHT) || [];
                 console.log("decompositionInterface OCR result:", result);
