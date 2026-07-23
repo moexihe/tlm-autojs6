@@ -1,17 +1,15 @@
 auto();
-const U = require("/storage/emulated/0/脚本/scrpit/utils/utils.js"); //[cite: 1]
-const P = require("/storage/emulated/0/脚本/scrpit/constant/坐标.js"); //[cite: 1]
-
-toast("刷魔素脚本开始 - 场景检测版");
+const U = require("/storage/emulated/0/脚本/scrpit/utils/utils.js");
+const P = require("/storage/emulated/0/脚本/scrpit/constant/坐标.js");
+toast("刷魔素脚本开始");
 console.log("刷魔素脚本启动");
-
-// 更稳健的屏幕截取 //[cite: 1]
+// 更稳健的屏幕截取，带重试和失败提示
 function safeRequestScreenCapture(maxAttempts = 3) {
     for (let i = 0; i < maxAttempts; i++) {
         try {
             if (requestScreenCapture(true)) return true;
         } catch (e) {
-            console.log("屏幕截取申请异常，等待重试: " + e);
+            // Android 有时会抛错，等待后重试
         }
         sleep(800);
     }
@@ -23,259 +21,213 @@ if (!safeRequestScreenCapture()) {
     throw new Error("无法获取屏幕截图权限");
 }
 
-// 场景枚举
-const SCENE = {
-    UNKNOWN: 0,
-    MAIN: 1,
-    DECOMPOSE: 2
-};
-
-// 全局任务状态
-let taskState = {
-    needDecompose: false, 
-    lastCombatTime: 0
-};
-
-// 场景检测器 //[cite: 1, 2]
-function detectScene() {
-    // 1. 检测是否在分解界面 //[cite: 1, 2]
-    let decomposeOcr = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 300, 300, P.REF_WIDTH, P.REF_HEIGHT) || []; 
-    if (decomposeOcr.some(t => t && t.includes("开始加工"))) { //[cite: 1]
-        return SCENE.DECOMPOSE;
+function oneSelectSwitch() {
+    try {
+        var result = U.ocrRegionCenter(P.单选[0], P.单选[1], 400, 400, P.REF_WIDTH, P.REF_HEIGHT) || [];
+        if (result.some(t => t && t.includes("单选"))) {
+            sleep(300);
+            U.clickByPoint([P.单选[0], P.单选[1]], P.REF_WIDTH, P.REF_HEIGHT);
+            return true;
+        }
+    } catch (e) {
+        // ocr 可能失败，记录并返回 false
+        log("oneSelectSwitch ocr error: " + e);
     }
-
-    // 2. 检测是否在主界面 //[cite: 1, 2]
-    const mainPageTemplate = "/storage/emulated/0/脚本/scrpit/images/商店.png"; //[cite: 1]
-    if (U.isMainPage(mainPageTemplate)) {
-        return SCENE.MAIN;
-    }
-
-    return SCENE.UNKNOWN;
+    toast("未识别到单选");
+    return false;
 }
 
-// 辅助点击函数 //[cite: 1]
+function sleepRandom(min, max) {
+    sleep(min + Math.floor(Math.random() * (max - min + 1)));
+}
+
 function clickSteps(steps, delay = 900) {
     steps.forEach(pt => {
         try {
             sleep(delay);
-            U.clickByPoint(pt, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 2]
+            U.clickByPoint(pt, P.REF_WIDTH, P.REF_HEIGHT);
         } catch (e) {
             log("click step failed: " + e);
         }
     });
 }
 
-// 随机延时 //[cite: 1]
-function sleepRandom(min, max) {
-    sleep(min + Math.floor(Math.random() * (max - min + 1)));
-}
+function tapMagicDevice() {
+    const templatePath = "/storage/emulated/0/脚本/scrpit/images/魔导.png";
+    if (!files.exists(templatePath)) {
+        toast("模板图片不存在: 魔导.png");
+        return false;
+    }
 
-// 百分比滑动 //[cite: 1]
-function swipePercent(x1p, y1p, x2p, y2p, duration) {
-    let w = device.width;
-    let h = device.height;
-    swipe(Math.floor(x1p * w), Math.floor(y1p * h), Math.floor(x2p * w), Math.min(Math.floor(y2p * h), h - 1), duration);
-}
-
-/**
- * OCR 识别指定文本并点击其中心（带坐标托底） //[cite: 2]
- * @param {string} text - 目标文本（如 "锻造"）
- * @param {Array} fallbackPoint - OCR识别失败时的备用点击坐标 //[cite: 3]
- */
-function clickText(text, fallbackPoint) {
-    let img = null;
+    let template = null;
     try {
-        img = captureScreen(); //[cite: 1, 2]
-        if (!img) throw new Error("截图失败");
+        template = images.read(templatePath);
+        if (!template) throw new Error("template read failed");
 
-        let ocrResult = null;
-        if (typeof gmlkit !== 'undefined') {
-            ocrResult = gmlkit.ocr(img, "zh"); // 优先使用高精度 gmlkit //[cite: 2]
-        } else {
-            ocrResult = ocr(img); //[cite: 2]
-        }
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            let img = null;
+            try {
+                img = captureScreen();
+                if (!img) throw new Error("captureScreen returned null");
 
-        if (ocrResult) {
-            // 1. 尝试直接精准查找
-            if (typeof ocrResult.find === 'function') {
-                let target = ocrResult.find(3, { text: text });
-                if (target) {
-                    let bounds = target.bounds;
-                    console.log(`OCR 精确找到 [${text}] -> 坐标: (${bounds.centerX()}, ${bounds.centerY()})`);
-                    click(bounds.centerX(), bounds.centerY());
+                let matchResult = images.matchTemplate(img, template, { threshold: 0.80, max: 100 });
+                console.log("tapMagicDevice match result:", matchResult.matches);
+                if (matchResult && matchResult.matches && matchResult.matches.length) {
+                    let matches = matchResult.matches
+                        .sort((a, b) => b.similarity - a.similarity)
+                        .slice(0, 20); // 取前20个匹配点
+                    matches.forEach(match => {
+                        console.log(`点击魔导设备: (${match.point.x}, ${match.point.y}), 置信度: ${match.similarity}`);
+                        U.pressByPoint([match.point.x, match.point.y], 30, P.REF_WIDTH, P.REF_HEIGHT);
+                        sleepRandom(120, 200);
+                    });
+                    clickSteps([P.开始加工, P.确认, P.领取点数, P.领取点数之后]);
                     return true;
                 }
+                toast(`未识别到魔导设备，重试 ${attempt}/3`);
+            } catch (e) {
+                log("tapMagicDevice error: " + e);
+            } finally {
+                try { img && img.recycle(); } catch (e) { }
             }
-
-            // 2. 模糊匹配子元素 //[cite: 2]
-            let children = ocrResult.children || ocrResult;
-            if (children && (Array.isArray(children) || typeof children.length === 'number')) {
-                for (let i = 0; i < children.length; i++) {
-                    let child = children[i];
-                    let childText = typeof child === 'string' ? child : (child.text || "");
-                    if (childText && childText.indexOf(text) !== -1) {
-                        if (child.bounds) {
-                            let bounds = child.bounds;
-                            console.log(`OCR 模糊找到 [${text}] (原词: ${childText}) -> 坐标: (${bounds.centerX()}, ${bounds.centerY()})`);
-                            click(bounds.centerX(), bounds.centerY());
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    } catch (e) {
-        console.log("OCR 查找 [" + text + "] 异常: " + e);
-    } finally {
-        if (img) img.recycle(); //[cite: 2]
-    }
-
-    // 3. OCR 识别失败时的托底机制 //[cite: 1]
-    if (fallbackPoint) {
-        console.log(`OCR 未找到 [${text}]，使用托底坐标点击`);
-        U.clickByPoint(fallbackPoint, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 2]
-        return true;
-    }
-    return false;
-}
-
-// 单选开关切换 //[cite: 1]
-function ensureOneSelect() {
-    try {
-        var result = U.ocrRegionCenter(P.单选[0], P.单选[1], 400, 400, P.REF_WIDTH, P.REF_HEIGHT) || []; //[cite: 1, 2, 3]
-        if (result.some(t => t && t.includes("单选"))) { //[cite: 1]
-            U.clickByPoint([P.单选[0], P.单选[1]], P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 2, 3]
             sleep(500);
-            return true;
         }
     } catch (e) {
-        log("oneSelectSwitch ocr error: " + e);
+        log("tapMagicDevice init error: " + e);
+    } finally {
+        try { template && template.recycle(); } catch (e) { }
     }
     return false;
 }
 
-// 处理魔导设备分解 //[cite: 1]
-function processMagicDevice() {
-    const templatePath = "/storage/emulated/0/脚本/scrpit/images/魔导.png"; //[cite: 1]
-    if (!files.exists(templatePath)) return false;
-
-    let template = images.read(templatePath); //[cite: 1]
-    if (!template) return false;
-
-    let foundAndClicked = false;
-    try {
-        let img = captureScreen(); //[cite: 1, 2]
-        let matchResult = images.matchTemplate(img, template, { threshold: 0.80, max: 100 }); //[cite: 1]
-        
-        if (matchResult && matchResult.matches && matchResult.matches.length) {
-            let matches = matchResult.matches
-                .sort((a, b) => b.similarity - a.similarity)
-                .slice(0, 20); // 取前20个匹配点 //[cite: 1]
-
-            matches.forEach(match => {
-                U.pressByPoint([match.point.x, match.point.y], 30, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 2]
-                sleepRandom(120, 200); //[cite: 1]
-            });
-            
-            // 点击加工确认流程 //[cite: 1, 3]
-            clickSteps([P.开始加工, P.确认, P.领取点数, P.领取点数之后], 1000); 
-            foundAndClicked = true;
-        }
-    } finally {
-        if (template) template.recycle();
-    }
-    return foundAndClicked;
+function decompositionInterface(maxRetries = 2) {
+	const mainPageTemplate = "/storage/emulated/0/脚本/scrpit/images/商店.png";
+	for (let attempt = 0; attempt <= maxRetries; attempt++) {
+		try {
+			if (U.isMainPage(mainPageTemplate)) {
+				var Steps = [
+                    { text: "返回", dx: 0, dy: 0 },
+					{ text: "选单", dx: 0, dy: 0 },
+					{ text: "角色", dx: 10, dy: -50 },
+					{ text: "技能", dx: 0, dy:	0 },
+					{ text: "使用特殊技能", dx: 0, dy: 0 },
+					{ text: "大师", dx: 0, dy: 0 },
+					{ text: "素材加工", dx: 0, dy: -50 }
+				];
+				Steps.forEach(Steps => {
+                    sleep(500);
+					U.clickText(Steps.text, Steps.dx, Steps.dy)
+					
+				});
+                sleep(1000)
+				var result = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 300, 300, P.REF_WIDTH, P.REF_HEIGHT) || [];
+				console.log("decompositionInterface OCR result:", result);
+				if (result.some(t => t && t.includes("开始加工"))) {
+					toast("进入成功");
+					return true;
+				}
+			}
+		} catch (e) {
+			log("decompositionInterface error: " + e);
+		}
+		U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
+		sleep(800);
+	}
+	toast("进入分解界面失败");
+	return false;
 }
 
-// 战斗循环逻辑 //[cite: 1]
-function runCombatSequence() {
-    console.log("进入战斗序列...");
-    U.pressByPoint(P.摄影模式, 100, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 3]
-    sleep(1500);
-    swipePercent(0.175, 0.800, 0.175, 1, 3000); //[cite: 1]
-    sleep(1000);
-
-    const timeoutMs = 2 * 60 * 1000; // 2分钟战斗 //[cite: 1]
+function runTaskWithTimeout(timeoutMs = 5 * 60 * 1000) {
     let start = Date.now();
-    
+    console.log("开始执行任务，超时时间(ms):", timeoutMs, "开始时间:", start.toString());
     while (Date.now() - start < timeoutMs) {
-        U.pressByPoint(P.神速, 30, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 3]
+        U.pressByPoint(P.神速, 30, P.REF_WIDTH, P.REF_HEIGHT);
         for (let i = 0; i < 150; i++) {
-            U.pressByPoint(P.攻击, 20, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 3]
+            U.pressByPoint(P.攻击, 20, P.REF_WIDTH, P.REF_HEIGHT);
             sleep(100);
             if ((i + 1) % 20 === 0) {
-                U.pressByPoint(P.旭日, 20, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 3]
+                U.pressByPoint(P.旭日, 20, P.REF_WIDTH, P.REF_HEIGHT);
                 sleep(120);
             }
         }
+        console.log("任务执行中...");
+        sleep(1000);
     }
-    console.log("战斗时间达标，准备去分解");
-    taskState.needDecompose = true; 
-    
-    // 关闭摄影模式 //[cite: 1, 3]
-    U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 3]
-    sleep(1500);
+    console.log("任务已运行超时，结束");
 }
 
-// 状态机主引擎
-function main() {
-    while (true) {
-        let currentScene = detectScene();
-        console.log("当前场景检测结果: ", currentScene);
+function swipePercent(x1p, y1p, x2p, y2p, duration) {
+    let w = device.width;
+    let h = device.height;
+    let x1 = Math.floor(x1p * w);
+    let y1 = Math.floor(y1p * h);
+    let x2 = Math.floor(x2p * w);
+    let y2 = Math.min(Math.floor(y2p * h), h - 1);
+    swipe(x1, y1, x2, y2, duration);
+}
 
-        switch (currentScene) {
-            case SCENE.MAIN:
-                if (taskState.needDecompose) {
-                    console.log("主界面 -> 尝试进入分解界面");
-                    
-                    // 1. 先点击前四个常规菜单步骤 //[cite: 1, 3]
-                    clickSteps([P.选单, P.角色, P.技能, P.使用特殊技能], 1000);
-                    sleep(1200); // 等待技能列表渲染
-                    
-                    // 2. OCR 寻找并点击“锻造大师”（匹配“锻造”二字，失败则用未学汪坐标托底） //[cite: 3]
-                    clickText("锻造", P.锻造大师技能未学汪); 
-                    sleep(1200);
-                    
-                    // 3. 点击素材加工 //[cite: 1, 3]
-                    clickSteps([P.素材加工], 1000);
-                    sleep(1500);
-                } else {
-                    console.log("主界面 -> 开始打怪");
-                    runCombatSequence();
-                }
-                break;
 
-            case SCENE.DECOMPOSE:
-                console.log("处于分解界面，开始处理魔导设备");
-                ensureOneSelect();
-                
-                let processCount = 0;
-                while (processCount < 5) { 
-                    if (!processMagicDevice()) {
-                        console.log("未识别到魔导设备，分解完毕");
-                        break;
-                    }
-                    sleep(1000);
-                    processCount++;
-                }
-                
-                // 分解完毕，重置状态并退回主界面 //[cite: 1, 3]
-                taskState.needDecompose = false;
-                clickSteps([P.关闭, P.关闭, P.关闭], 1000); 
-                break;
+function enterPhotoModeAndBack() {
+    console.log("开启摄影模式");
+    sleep(500);
+    U.pressByPoint(P.摄影模式, 100, P.REF_WIDTH, P.REF_HEIGHT);
+    sleep(1000);
+    console.log("后退");
+    swipePercent(0.175, 0.800, 0.175, 1, 3000);
+}
 
-            case SCENE.UNKNOWN:
-            default:
-                console.log("未知场景，尝试点击关闭或返回修正状态...");
-                U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 3]
-                sleep(1000);
-                U.clickByPoint(P.返回, P.REF_WIDTH, P.REF_HEIGHT); //[cite: 1, 3]
-                sleep(1000);
-                break;
+function ensureMainPage() {
+    const mainPageTemplate = "/storage/emulated/0/脚本/scrpit/images/商店.png";
+    for (let attempt = 0; attempt < 2; attempt++) {
+        if (U.isMainPage(mainPageTemplate)) {
+            return true;
         }
-        
-        sleep(1000); 
+        U.clickByPoint(attempt === 0 ? P.返回 : P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
+        sleep(1200);
+    }
+    return U.isMainPage(mainPageTemplate);
+}
+
+function main() {
+    const taskTimeout = 2 * 60 * 1000;
+    while (true) {
+        if (!ensureMainPage()) {
+            toast("无法定位主界面，重试");
+            sleep(1200);
+            continue;
+        }
+
+        enterPhotoModeAndBack();
+        sleep(500); // 等待界面稳定
+        runTaskWithTimeout(taskTimeout);
+        sleep(1500); // 等待界面稳定
+
+        if (!ensureMainPage()) {
+            toast("未返回主界面，重试整个流程");
+            continue;
+        }
+
+        if (!decompositionInterface()) {
+            continue;
+        }
+
+        sleep(800);
+        oneSelectSwitch();
+        sleep(800);
+
+        while (true) {
+            try {
+                if (!tapMagicDevice()) {
+                    break; // 如果未识别到魔导设备，退出循环
+                }
+                sleepRandom(600, 1000);
+            } catch (e) {
+                log("main loop error: " + e);
+                sleep(1500);
+            }
+        }
     }
 }
 
 main();
+// enterPhotoModeAndBack();
