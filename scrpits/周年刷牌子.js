@@ -249,7 +249,7 @@ function main() {
         }
     }
     catch (e) {
-        ensureScreenCapture(e);
+        U.ensureScreenCapture(e);
     }
 }
 main();
