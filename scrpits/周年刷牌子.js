@@ -255,7 +255,6 @@ function main() {
         maxFileSize: 384 << 10, /* 384 KB. */
         rootLevel: "off",
     });
-    try {
         while (true) {
             let scene = detectScene();
             console.log("[场景检测] 当前场景 =>", scene);
@@ -282,13 +281,6 @@ function main() {
             }
             sleep(700);
         }
-    }
-    catch (e) {
-        let res = ensureScreenCapture(e);
-        if (res.tried && res.ok) {
-            // 重新申请成功，重试一次
-            toast("权限重新申请成功")
-        }
-    }
+    
 }
 main();
