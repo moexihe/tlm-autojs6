@@ -93,7 +93,7 @@ function ocrRegionPercent(x, y, w, h, refWidth, refHeight) {
 
         // 截屏并识别，ocr 需要 x,y,width,height
         //console.log(`ocrRegionCenter: x0=${x0}, y0=${y0}, width=${width}, height=${height}`);
-        let results = ocr([x0, y0, width, height]);
+        let results = ocr(img, [x0, y0, width, height]);;
         img.recycle();
         return results;
     } catch (e) {
@@ -106,8 +106,10 @@ function ocrRegionPercent(x, y, w, h, refWidth, refHeight) {
 function ocrRegionCenter(x, y, w, h, refWidth, refHeight) {
     let img = null;
     try {
-        /* 截屏并获取包装图像对象. */
+        /* 截屏并获取包装图像对象 */
         img = captureScreen();
+        if (!img) return [];
+
         // 转换成百分比
         let xPercent = x / refWidth;
         let yPercent = y / refHeight;
@@ -140,17 +142,23 @@ function ocrRegionCenter(x, y, w, h, refWidth, refHeight) {
             return [];
         }
         console.log(`ocrRegionCenter: x0=${x0}, y0=${y0}, width=${width}, height=${height}`);
-        let results = ocr([x0, y0, width, height]);
-        img.recycle();
+
+        // 修正 1：把刚才截取的 img 明确传进去
+        let results = ocr(img, [x0, y0, width, height]); 
         return results;
+
     } catch (e) {
         console.log("ocrRegionCenter error: " + e);
-       ensureScreenCapture(e);
-    }
-    finally {
-        if (img) img.recycle(); //[cite: 2]
+        ensureScreenCapture(e);
+        return [];
+    } finally {
+        // 修正 2：统一在 finally 中判断并安全回收，避免二次回收报错
+        if (img && !img.isRecycled()) {
+            img.recycle();
+        }
     }
 }
+
 
 function ocrFullScreen() {
     let img = null;
