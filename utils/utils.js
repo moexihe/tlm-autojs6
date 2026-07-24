@@ -4,12 +4,14 @@
  * @returns {boolean} 是否已重新申请
  */
 function ensureScreenCapture(e) {
-    if (e && e.message && e.message.indexOf("captureScreen failed") !== -1) {
-        toastLog("截图权限丢失，尝试重新申请...");
-        // 重新申请权限
-        return requestScreenCapture();
-    }
-    return false;
+        if (e.message.indexOf("captureScreen failed") !== -1) {
+            toastLog("截图权限丢失，尝试重新申请...");
+            // 重新申请权限
+            requestScreenCapture();
+        } else {
+            console.error(e);
+            return [];
+        }
 }
 
 
@@ -97,7 +99,7 @@ function ocrRegionPercent(x, y, w, h, refWidth, refHeight) {
         img.recycle();
         return results;
     } catch (e) {
-        ensureScreenCapture(e);
+        console.log(e)
         return [];
         } finally {
         if (img) img.recycle(); //[cite: 2]
@@ -150,7 +152,6 @@ function ocrRegionCenter(x, y, w, h, refWidth, refHeight) {
 
     } catch (e) {
         console.log("ocrRegionCenter error: " + e);
-        ensureScreenCapture(e);
         return [];
     } finally {
         // 修正 2：统一在 finally 中判断并安全回收，避免二次回收报错
@@ -174,7 +175,6 @@ function ocrFullScreen() {
         return results;
     } catch (e) {
         console.log("ocrFullScreen error: " + e);
-        ensureScreenCapture(e);
         return [];
     } finally {
         if (img) img.recycle();
@@ -202,7 +202,6 @@ function isMainPage(templatePath, threshold = 0.8) {
         img.recycle();
         return matchResult && matchResult.matches && matchResult.matches.length > 0;
     } catch (e) {
-            ensureScreenCapture(e);
             return [];
     } finally {
         try { template && template.recycle(); } catch (e) { }
@@ -238,7 +237,6 @@ function findimg(templatePath, threshold = 0.7) {
         console.log("findimg match result:", matchResult.matches);
         return matchResult && matchResult.matches && matchResult.matches.length > 0;
     } catch (e) {
-            ensureScreenCapture(e);
             return [];
     } finally {
         try { template && template.recycle(); } catch (e) { }
@@ -342,5 +340,6 @@ module.exports = {
     getPointColor,
     isPointColor,
     clickText,
+    ensureScreenCapture
 };
 
