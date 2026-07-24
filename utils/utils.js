@@ -1,48 +1,28 @@
 /**
- * 检查并在必要时重新申请截图权限
- * @param {Error} e
- * @returns {{tried: boolean, ok: boolean}} tried 表示是否尝试过申请，ok 表示申请是否成功
+ * 检查并重新申请截图权限
+ * @param {Error} e - 捕获到的异常对象
+ * @returns {boolean} 是否已重新申请
  */
 function ensureScreenCapture(e) {
-    let now = Date.now();
-    let msg = e ? (e.message || e.toString()) : "";
-    msg = String(msg).toLowerCase();
-
-    const keywords = [
-        "capturescreen failed",
-        "virtualdisplay",
-        "securityexception",
-        "cannot create virtualdisplay",
-        "capture failed"
-    ];
-
-    const isScreenError = keywords.some(k => msg.includes(k));
-    if (!isScreenError) return { tried: false, ok: false };
-
-    // 限频：30 秒内只尝试一次
-    if (now - lastScreenRequestAt < SCREEN_REQUEST_COOLDOWN_MS) {
-        toastLog("短时间内已尝试重新申请截图权限，跳过重复申请");
-        return { tried: false, ok: false };
-    }
-
-    lastScreenRequestAt = now;
-    toastLog("截图权限丢失，尝试重新申请...");
-    try {
-        // 注意：在某些设备上需要在主线程或有 UI 权限的上下文调用
-        let ok = requestScreenCapture();
-        if (!ok) {
-            toastLog("重新申请截图权限失败");
-            return { tried: true, ok: false };
+    if (e && e.message) {
+        let msg = String(e.message);
+        // 扩大异常捕获范围，包含安卓高版本特征报错
+        if (msg.indexOf("captureScreen failed") !== -1 || 
+            msg.indexOf("VirtualDisplay") !== -1 || 
+            msg.indexOf("SecurityException") !== -1) {
+            
+            console.log("检测到截图 Token 失效，尝试重新唤醒...");
+            toastLog("重新初始化截图服务...");
+            
+            // 因为你有 Root 媒体授权，这里不会弹窗，而是会静默重新刷新底层 Token
+            sleep(500); // 给系统一点缓冲时间释放旧资源
+            let result = requestScreenCapture();
+            sleep(1000); // 等待 VirtualDisplay 建立
+            return result;
         }
-        toastLog("重新申请截图权限成功");
-        return { tried: true, ok: true };
-    } catch (ex) {
-        // 捕获 requestScreenCapture 本身可能抛出的异常
-        console.error("requestScreenCapture 抛出异常:", ex);
-        return { tried: true, ok: false };
     }
+    return false;
 }
-
 
 
 // 按比例换算坐标
@@ -95,10 +75,7 @@ function toPercentRegion(x, y, w, h, refWidth, refHeight) {
  * @returns {Array} OCR识别结果
  */
 function ocrRegionPercent(x, y, w, h, refWidth, refHeight) {
-    let img = null;
     try {
-        /* 截屏并获取包装图像对象. */
-        img = captureScreen();
         // 转换成百分比区域
         let [xPercent, yPercent, wPercent, hPercent] = toPercentRegion(x, y, w, h, refWidth, refHeight);
 
@@ -125,10 +102,10 @@ function ocrRegionPercent(x, y, w, h, refWidth, refHeight) {
 
         // 截屏并识别，ocr 需要 x,y,width,height
         //console.log(`ocrRegionCenter: x0=${x0}, y0=${y0}, width=${width}, height=${height}`);
-        let results = ocr(img, [x0, y0, width, height]);;
-        img.recycle();
+        let results = ocr([x0, y0, width, height]);
         return results;
     } catch (e) {
+        ensureScreenCapture(e);
         console.log(e)
         return [];
     }
@@ -136,12 +113,7 @@ function ocrRegionPercent(x, y, w, h, refWidth, refHeight) {
 
 
 function ocrRegionCenter(x, y, w, h, refWidth, refHeight) {
-    let img = null;
     try {
-        /* 截屏并获取包装图像对象 */
-        img = captureScreen();
-        if (!img) return [];
-
         // 转换成百分比
         let xPercent = x / refWidth;
         let yPercent = y / refHeight;
@@ -174,28 +146,21 @@ function ocrRegionCenter(x, y, w, h, refWidth, refHeight) {
             return [];
         }
         console.log(`ocrRegionCenter: x0=${x0}, y0=${y0}, width=${width}, height=${height}`);
-
-        // 修正 1：把刚才截取的 img 明确传进去
-        let results = ocr(img, [x0, y0, width, height]);
-        img.recycle();
+        let results = ocr([x0, y0, width, height]);
         return results;
 
     } catch (e) {
+        ensureScreenCapture(e);
         console.log("ocrRegionCenter error: " + e);
         return [];
     }
 }
 
 function ocrFullScreen() {
-    let img = null;
     try {
-        /* 截屏并获取包装图像对象. */
-        img = captureScreen();
-        if (!img) throw new Error("captureScreen failed");
         let screenWidth = device.width;
         let screenHeight = device.height;
         let results = ocr([0, 0, screenWidth, screenHeight]);
-        img.recycle();
         return results;
     } catch (e) {
         console.log("ocrFullScreen error: " + e);
