@@ -148,19 +148,14 @@ function ocrRegionCenter(x, y, w, h, refWidth, refHeight) {
 
         // 修正 1：把刚才截取的 img 明确传进去
         let results = ocr(img, [x0, y0, width, height]); 
+        img.recycle();
         return results;
 
     } catch (e) {
         console.log("ocrRegionCenter error: " + e);
         return [];
-    } finally {
-        // 修正 2：统一在 finally 中判断并安全回收，避免二次回收报错
-        if (img && !img.isRecycled()) {
-            img.recycle();
-        }
-    }
 }
-
+}
 
 function ocrFullScreen() {
     let img = null;
