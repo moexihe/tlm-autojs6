@@ -4,14 +4,14 @@
  * @returns {boolean} 是否已重新申请
  */
 function ensureScreenCapture(e) {
-        if (e.message.indexOf("captureScreen failed") !== -1) {
-            toastLog("截图权限丢失，尝试重新申请...");
-            // 重新申请权限
-            requestScreenCapture();
-        } else {
-            console.error(e);
-            return [];
-        }
+    if (e.message.indexOf("captureScreen failed") !== -1) {
+        toastLog("截图权限丢失，尝试重新申请...");
+        // 重新申请权限
+        requestScreenCapture();
+    } else {
+        console.error(e);
+        return [];
+    }
 }
 
 
@@ -101,10 +101,9 @@ function ocrRegionPercent(x, y, w, h, refWidth, refHeight) {
     } catch (e) {
         console.log(e)
         return [];
-        } finally {
-        if (img) img.recycle(); //[cite: 2]
     }
 }
+
 
 function ocrRegionCenter(x, y, w, h, refWidth, refHeight) {
     let img = null;
@@ -147,14 +146,14 @@ function ocrRegionCenter(x, y, w, h, refWidth, refHeight) {
         console.log(`ocrRegionCenter: x0=${x0}, y0=${y0}, width=${width}, height=${height}`);
 
         // 修正 1：把刚才截取的 img 明确传进去
-        let results = ocr(img, [x0, y0, width, height]); 
+        let results = ocr(img, [x0, y0, width, height]);
         img.recycle();
         return results;
 
     } catch (e) {
         console.log("ocrRegionCenter error: " + e);
         return [];
-}
+    }
 }
 
 function ocrFullScreen() {
@@ -171,8 +170,6 @@ function ocrFullScreen() {
     } catch (e) {
         console.log("ocrFullScreen error: " + e);
         return [];
-    } finally {
-        if (img) img.recycle();
     }
 }
 
@@ -197,7 +194,7 @@ function isMainPage(templatePath, threshold = 0.8) {
         img.recycle();
         return matchResult && matchResult.matches && matchResult.matches.length > 0;
     } catch (e) {
-            return [];
+        return [];
     } finally {
         try { template && template.recycle(); } catch (e) { }
         try { img && img.recycle(); } catch (e) { }
@@ -232,7 +229,7 @@ function findimg(templatePath, threshold = 0.7) {
         console.log("findimg match result:", matchResult.matches);
         return matchResult && matchResult.matches && matchResult.matches.length > 0;
     } catch (e) {
-            return [];
+        return [];
     } finally {
         try { template && template.recycle(); } catch (e) { }
         try { img && img.recycle(); } catch (e) { }
@@ -262,10 +259,8 @@ function getPointColor(point, refWidth, refHeight) {
             return [];
         }
     }
-    finally {
-        if (img) img.recycle(); //[cite: 2]
-    }
 }
+
 
 function isPointColor(point, targetColor, tolerance = 20, refWidth, refHeight) {
     let actualColor = getPointColor(point, refWidth, refHeight);
@@ -313,14 +308,9 @@ function clickText(text, offsetX = 0, offsetY = 0) {
         }
 
     } catch (e) {
-        ensureScreenCapture(e);
-    
-    } finally {
-        if (grayImg) grayImg.recycle();
-        if (rawImg) rawImg.recycle();
+        console.log("clickTextError:", e)
     }
 }
-
 module.exports = {
     scalePoint,
     clickByPoint,
