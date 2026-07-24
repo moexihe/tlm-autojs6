@@ -6,7 +6,7 @@ const P = require("/storage/emulated/0/脚本/scrpit/constant/坐标.js");
 function attack() {
     console.log("[战斗] 开始攻击"); ``
     console.log("战斗开始前等待7s");
-    sleep(8500);
+    sleep(8000);
     U.pressByPoint(P.双风暴, 10, P.REF_WIDTH, P.REF_HEIGHT);
     sleep(500);
     [P.神速, P.神速, P.神速].forEach(pt => {
@@ -67,7 +67,7 @@ function checkSpecialArena() {
             log("[特殊竞技场] click step failed: " + e);
         }
     });
-    while (rounds < 10) {
+    while (rounds < 5) {
         sleep(500);
         let skipText = U.ocrRegionCenter(P.跳过[0], P.跳过[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
         let skip = skipText.some(t => t && t.includes("跳过"));
