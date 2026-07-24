@@ -169,6 +169,7 @@ function ocrFullScreen() {
         return results;
     } catch (e) {
         console.log("ocrFullScreen error: " + e);
+        ensureScreenCapture(e);
         return [];
     }
 }

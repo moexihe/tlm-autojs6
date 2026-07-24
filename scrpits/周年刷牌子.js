@@ -103,13 +103,18 @@ function checkReady() {
 function isHomePage() {
     console.log("检查是否在主页面");
     sleep(1000);
-    let shop = U.isMainPage("/storage/emulated/0/脚本/scrpit/images/商店.png");
-    let hp = U.ocrRegionCenter(P.水晶位置[0], P.水晶位置[1], P.REF_WIDTH, P.REF_HEIGHT).some(t => t && t.includes("水晶"));
-    let channel = U.ocrRegionCenter(P.频道[0], P.频道[1], 300, 200, P.REF_WIDTH, P.REF_HEIGHT).some(t => t && t.includes("道"));
-    // let qx = U.isMainPage("/storage/emulated/0/脚本/scrpit/images/情绪.png");
-    console.log("检查主页面结果 => shop:", shop, "hp:", hp, "channel:", channel);
-    return (shop || !hp) && channel;
+
+    let shop = U.isMainPage("/storage/emulated/0/脚本/script/images/商店.png");
+    let hp = U.ocrRegionCenter(P.水晶位置[0], P.水晶位置[1], P.REF_WIDTH, P.REF_HEIGHT)
+        .some(t => typeof t === "string" && /水晶/.test(t));
+    let channel = U.ocrRegionCenter(P.频道[0], P.频道[1], 300, 200, P.REF_WIDTH, P.REF_HEIGHT)
+        .some(t => typeof t === "string" && /道/.test(t));
+
+    let result = (shop || !hp) && channel;
+    console.log("检查主页面结果 =>", { shop, hp, channel, result });
+    return result;
 }
+
 function BackMainPage() {
     for (var i = 0; i < 3; i++) {
         let i = isHomePage();
