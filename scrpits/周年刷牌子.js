@@ -108,7 +108,7 @@ function isHomePage() {
     let channel = U.ocrRegionCenter(P.频道[0], P.频道[1], 300, 200, P.REF_WIDTH, P.REF_HEIGHT).some(t => t && t.includes("道"));
     // let qx = U.isMainPage("/storage/emulated/0/脚本/scrpit/images/情绪.png");
     console.log("检查主页面结果 => shop:", shop, "hp:", hp, "channel:", channel);
-    return shop && !hp && channel;
+    return (shop || !hp) && channel;
 }
 function BackMainPage() {
     for (var i = 0; i < 3; i++) {
@@ -164,7 +164,6 @@ function detectScene() {
     // let enterbattle = (Crystal || CrystalHP) && time;
     let enterbattle = CrystalHP;
     // console.log("[战斗] 检查水晶:", Crystal, "检查水晶血量结果:", CrystalHP, "检查剩余时间结果:", time);
-    toast("战斗检测", enterbattle)
     if (enterbattle) {
         return "BATTLE";
     }
