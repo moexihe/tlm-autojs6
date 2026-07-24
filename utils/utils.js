@@ -4,14 +4,14 @@
  * @returns {boolean} 是否已重新申请
  */
 function ensureScreenCapture(e) {
-    if (e.message.indexOf("captureScreen failed") !== -1) {
-        toastLog("截图权限丢失，尝试重新申请...");
-        // 重新申请权限
-        requestScreenCapture();
-    } else {
-        console.error(e);
-        return [];
-    }
+    if (e && e.message) {        // 将 Android 14 常见的报错特征词加入匹配      
+        let msg = e.message; if (msg.indexOf("captureScreen failed") !== -1 ||
+            msg.indexOf("VirtualDisplay") !== -1 ||
+            msg.indexOf("SecurityException") !== -1) {
+            toastLog("截图权限丢失，尝试重新申请...");
+            return requestScreenCapture();
+        }
+    } return false;
 }
 
 
