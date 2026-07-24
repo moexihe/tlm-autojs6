@@ -2,7 +2,7 @@ auto();
 const U = require("/storage/emulated/0/脚本/scrpit/utils/utils.js");
 const P = require("/storage/emulated/0/脚本/scrpit/constant/坐标.js");
 /* 申请屏幕截图权限. */
-requestScreenCapture();
+
 function attack() {
     console.log("[战斗] 开始攻击"); ``
     console.log("战斗开始前等待7s");
@@ -57,7 +57,7 @@ function MoveToGame() {
 
 
 function checkSpecialArena() {
-     let rounds = 0;
+    let rounds = 0;
     console.log("[特殊竞技场] 点击特殊竞技场按钮");
     [P.特殊竞技场受理处].forEach(pt => {
         try {
@@ -70,11 +70,11 @@ function checkSpecialArena() {
     while (rounds < 10) {
         sleep(500);
         let skipText = U.ocrRegionCenter(P.跳过[0], P.跳过[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
-        let skip= skipText.some(t => t && t.includes("跳过"));
-        let skip1= skipText.some(t => t && t.includes("下一步"));
+        let skip = skipText.some(t => t && t.includes("跳过"));
+        let skip1 = skipText.some(t => t && t.includes("下一步"));
         if (skip || skip1) {
-        U.clickByPoint(P.跳过, P.REF_WIDTH, P.REF_HEIGHT);
-        break;
+            U.clickByPoint(P.跳过, P.REF_WIDTH, P.REF_HEIGHT);
+            break;
         }
         rounds++;
     }
@@ -145,8 +145,8 @@ function detectScene() {
 
     let specialArenaText = U.ocrRegionCenter(P.全屏位置[0], P.全屏位置[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
     let isSpecialArena = specialArenaText.some(t => t && t.includes("放弃")) || specialArenaText.some(t => t && t.includes("防卫战") ||
-    specialArenaText.some(t => t && t.includes("下一步")));
-    console.log("[战斗] 检查特殊竞技场文字:", specialArenaText , "是否在特殊竞技场:", isSpecialArena);
+        specialArenaText.some(t => t && t.includes("下一步")));
+    console.log("[战斗] 检查特殊竞技场文字:", specialArenaText, "是否在特殊竞技场:", isSpecialArena);
     if (isSpecialArena) {
         return "SPECIAL_ARENA";
     }
@@ -159,14 +159,13 @@ function detectScene() {
     let skipText = U.ocrRegionCenter(P.全屏位置[0], P.全屏位置[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
     console.log("[战斗] 检查文字:", skipText);
     // let  Crystal = skipText.some(t => t && t.includes("水晶"));
-    let  CrystalHP = U.findimg("/storage/emulated/0/脚本/scrpit/images/水晶血量.png");
+    let CrystalHP = U.findimg("/storage/emulated/0/脚本/scrpit/images/水晶血量.png");
     // let time = skipText.some(t => t && t.includes("时间"));
     // let enterbattle = (Crystal || CrystalHP) && time;
-    let enterbattle =CrystalHP;
+    let enterbattle = CrystalHP;
     // console.log("[战斗] 检查水晶:", Crystal, "检查水晶血量结果:", CrystalHP, "检查剩余时间结果:", time);
-    toast("战斗检测",enterbattle)
-    if (enterbattle)
-    {
+    toast("战斗检测", enterbattle)
+    if (enterbattle) {
         return "BATTLE";
     }
 
@@ -200,8 +199,8 @@ function handleSettlement() {
 function handleUnknownScene() {
     console.log("[场景检测] 未知场景，尝试回退/关闭");
 
-    let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1],  P.REF_WIDTH, P.REF_HEIGHT) || [];
-    if (closeText.some(t => t && t.includes("关闭"))|| closeText.some(t => t && t.includes("闭"))) {
+    let closeText = U.ocrRegionCenter(P.关闭[0], P.关闭[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
+    if (closeText.some(t => t && t.includes("关闭")) || closeText.some(t => t && t.includes("闭"))) {
         U.clickByPoint(P.关闭, P.REF_WIDTH, P.REF_HEIGHT);
         sleep(1200);
         return;
@@ -216,40 +215,41 @@ function handleUnknownScene() {
 }
 
 function main() {
+    requestScreenCapture();
     console.setGlobalLogConfig({
         maxFileSize: 384 << 10, /* 384 KB. */
         rootLevel: "off",
     });
-    try{
-    while (true) {
-        let scene = detectScene();
-        console.log("[场景检测] 当前场景 =>", scene);
-        switch (scene) {
-            case "HOME":
-            case "SPECIAL_ENTRY":
-                handleHomeScene();
-                break;
-            case "SPECIAL_ARENA":
-                handleSpecialArenaScene();
-                break;
-            case "READY":
-                handleReadyScene();
-                break;
-            case "BATTLE":
-                handleBattleScene();
-                break;
-            case "Settlement":
-                handleSettlement();
-                break;
-            default:
-                handleUnknownScene();
-                break;
+    try {
+        while (true) {
+            let scene = detectScene();
+            console.log("[场景检测] 当前场景 =>", scene);
+            switch (scene) {
+                case "HOME":
+                case "SPECIAL_ENTRY":
+                    handleHomeScene();
+                    break;
+                case "SPECIAL_ARENA":
+                    handleSpecialArenaScene();
+                    break;
+                case "READY":
+                    handleReadyScene();
+                    break;
+                case "BATTLE":
+                    handleBattleScene();
+                    break;
+                case "Settlement":
+                    handleSettlement();
+                    break;
+                default:
+                    handleUnknownScene();
+                    break;
+            }
+            sleep(700);
         }
-        sleep(700);
     }
-}
-catch(e){
-    ensureScreenCapture(e);
-}
+    catch (e) {
+        ensureScreenCapture(e);
+    }
 }
 main();
