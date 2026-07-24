@@ -220,6 +220,7 @@ function main() {
         maxFileSize: 384 << 10, /* 384 KB. */
         rootLevel: "off",
     });
+    try{
     while (true) {
         let scene = detectScene();
         console.log("[场景检测] 当前场景 =>", scene);
@@ -247,5 +248,8 @@ function main() {
         sleep(700);
     }
 }
-
+catch(e){
+    ensureScreenCapture(e);
+}
+}
 main();
