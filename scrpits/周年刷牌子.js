@@ -72,7 +72,7 @@ function checkSpecialArena() {
     while (rounds < 5) {
         sleep(500);
         // U.clickText("跳过")
-        let skipText = U.clickText(P.跳过[0], P.跳过[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
+        let skipText = U.ocrRegionCenter(P.跳过[0], P.跳过[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
         let skip = skipText.some(t => t && t.includes("跳过"));
         let skip1 = skipText.some(t => t && t.includes("下一步"));
         let skip2 = skipText.some(t => t && t.includes("防卫战"));
