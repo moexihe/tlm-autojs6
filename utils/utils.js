@@ -98,6 +98,7 @@ function ocrRegionPercent(x, y, w, h, refWidth, refHeight) {
         return results;
     } catch (e) {
         ensureScreenCapture(e);
+        return [];
         } finally {
         if (img) img.recycle(); //[cite: 2]
     }
@@ -202,6 +203,7 @@ function isMainPage(templatePath, threshold = 0.8) {
         return matchResult && matchResult.matches && matchResult.matches.length > 0;
     } catch (e) {
             ensureScreenCapture(e);
+            return [];
     } finally {
         try { template && template.recycle(); } catch (e) { }
         try { img && img.recycle(); } catch (e) { }
@@ -237,6 +239,7 @@ function findimg(templatePath, threshold = 0.7) {
         return matchResult && matchResult.matches && matchResult.matches.length > 0;
     } catch (e) {
             ensureScreenCapture(e);
+            return [];
     } finally {
         try { template && template.recycle(); } catch (e) { }
         try { img && img.recycle(); } catch (e) { }
@@ -263,6 +266,7 @@ function getPointColor(point, refWidth, refHeight) {
             requestScreenCapture();
         } else {
             console.error(e);
+            return [];
         }
     }
     finally {
