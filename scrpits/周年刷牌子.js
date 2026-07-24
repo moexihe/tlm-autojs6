@@ -2,6 +2,8 @@ auto();
 const U = require("/storage/emulated/0/脚本/scrpit/utils/utils.js");
 const P = require("/storage/emulated/0/脚本/scrpit/constant/坐标.js");
 /* 申请屏幕截图权限. */
+let lastScreenRequestAt = 0;
+const SCREEN_REQUEST_COOLDOWN_MS = 30 * 1000; // 30 秒内只尝试一次
 
 function attack() {
     console.log("[战斗] 开始攻击"); ``
@@ -218,6 +220,35 @@ function handleUnknownScene() {
     }
 }
 
+/**
+ * 检查并重新申请截图权限
+ * @param {Error} e - 捕获到的异常对象
+ * @returns {boolean} 是否重新申请成功
+ */
+let screenCaptureRequested = false;
+
+function ensureScreenCapture(e) {
+    let msg = e ? (e.message || e.toString()) : "";
+    if (msg.includes("captureScreen failed") ||
+        msg.includes("VirtualDisplay") ||
+        msg.includes("SecurityException")) {
+        
+        toastLog("截图权限丢失，尝试重新申请...");
+        
+        // 避免重复申请
+        if (!screenCaptureRequested) {
+            screenCaptureRequested = true;
+            let ok = requestScreenCapture();
+            if (!ok) {
+                toastLog("重新申请截图权限失败");
+            }
+            return ok;
+        } else {
+            toastLog("已尝试过重新申请，不再重复");
+        }
+    }
+    return false;
+}
 function main() {
     requestScreenCapture();
     console.setGlobalLogConfig({
@@ -253,7 +284,11 @@ function main() {
         }
     }
     catch (e) {
-        U.ensureScreenCapture(e);
+        let res = ensureScreenCapture(e);
+        if (res.tried && res.ok) {
+            // 重新申请成功，重试一次
+            toast("权限重新申请成功")
+        }
     }
 }
 main();

@@ -1,18 +1,48 @@
 /**
- * 检查并重新申请截图权限
- * @param {Error} e - 捕获到的异常对象
- * @returns {boolean} 是否已重新申请
+ * 检查并在必要时重新申请截图权限
+ * @param {Error} e
+ * @returns {{tried: boolean, ok: boolean}} tried 表示是否尝试过申请，ok 表示申请是否成功
  */
 function ensureScreenCapture(e) {
-    if (e && e.message) {        // 将 Android 14 常见的报错特征词加入匹配      
-        let msg = e.message; if (msg.indexOf("captureScreen failed") !== -1 ||
-            msg.indexOf("VirtualDisplay") !== -1 ||
-            msg.indexOf("SecurityException") !== -1) {
-            toastLog("截图权限丢失，尝试重新申请...");
-            return requestScreenCapture();
+    let now = Date.now();
+    let msg = e ? (e.message || e.toString()) : "";
+    msg = String(msg).toLowerCase();
+
+    const keywords = [
+        "capturescreen failed",
+        "virtualdisplay",
+        "securityexception",
+        "cannot create virtualdisplay",
+        "capture failed"
+    ];
+
+    const isScreenError = keywords.some(k => msg.includes(k));
+    if (!isScreenError) return { tried: false, ok: false };
+
+    // 限频：30 秒内只尝试一次
+    if (now - lastScreenRequestAt < SCREEN_REQUEST_COOLDOWN_MS) {
+        toastLog("短时间内已尝试重新申请截图权限，跳过重复申请");
+        return { tried: false, ok: false };
+    }
+
+    lastScreenRequestAt = now;
+    toastLog("截图权限丢失，尝试重新申请...");
+    try {
+        // 注意：在某些设备上需要在主线程或有 UI 权限的上下文调用
+        let ok = requestScreenCapture();
+        if (!ok) {
+            toastLog("重新申请截图权限失败");
+            return { tried: true, ok: false };
         }
-    } return false;
+        toastLog("重新申请截图权限成功");
+        return { tried: true, ok: true };
+    } catch (ex) {
+        // 捕获 requestScreenCapture 本身可能抛出的异常
+        console.error("requestScreenCapture 抛出异常:", ex);
+        return { tried: true, ok: false };
+    }
 }
+
 
 
 // 按比例换算坐标
