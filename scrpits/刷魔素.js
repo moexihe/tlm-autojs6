@@ -30,6 +30,7 @@ function oneSelectSwitch() {
             U.clickText(Steps.text, Steps.dx, Steps.dy)
 
         });;
+        sleep(1000)
         if (U.ocrRegionCenter(P.单选[0], P.单选[1],500,300, P.REF_WIDTH, P.REF_HEIGHT).some(t => t && t.includes("单选"))) {
             sleep(1000)
             U.pressByPoint(P.单选, 100, P.REF_WIDTH, P.REF_HEIGHT)
