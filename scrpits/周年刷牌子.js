@@ -71,11 +71,12 @@ function checkSpecialArena() {
     });
     while (rounds < 5) {
         sleep(500);
-        // U.clickText("跳过")
+        // U.clickText("跳过")        
+        const keywords = ["跳过", "/下.?步/", "防卫战"];
         let skipText = U.ocrRegionCenter(P.跳过[0], P.跳过[1], P.REF_WIDTH, P.REF_HEIGHT) || [];
-        let skip = skipText.some(t => t && t.includes("跳过"));
-        let skip1 = skipText.some(t => t && t.includes("下一步"));
-        let skip2 = skipText.some(t => t && t.includes("防卫战"));
+            let skip = skipText.some(t => 
+            t && keywords.some(k => t.includes(k))
+            );
         if (skip || skip1 || skip2) {
             U.clickByPoint(P.跳过, P.REF_WIDTH, P.REF_HEIGHT);
             break;
