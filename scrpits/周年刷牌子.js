@@ -8,10 +8,10 @@ const SCREEN_REQUEST_COOLDOWN_MS = 30 * 1000; // 30 秒内只尝试一次
 function attack() {
     console.log("[战斗] 开始攻击"); ``
     console.log("战斗开始前等待7s");
-    sleep(8000);
+    sleep(7500);
     U.pressByPoint(P.双风暴, 10, P.REF_WIDTH, P.REF_HEIGHT);
     sleep(500);
-    [P.神速, P.神速, P.神速].forEach(pt => {
+    [P.神速, P.神速, P.神速,P.神速, P.神速].forEach(pt => {
         try {
             sleep(500);
             U.pressByPoint(pt, 10, P.REF_WIDTH, P.REF_HEIGHT);
