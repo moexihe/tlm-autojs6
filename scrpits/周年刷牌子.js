@@ -94,7 +94,7 @@ function checkReady() {
     // let point = [1444, 906];
     // let ok = U.isPointColor(point, "#8e8e8e", 30, P.REF_WIDTH, P.REF_HEIGHT);
     // console.log("[准备界面] 检查准备好了按钮颜色:", ok);
-    sleep(1000)
+    // sleep(1000)
     let readyText = U.ocrRegionCenter(P.准备好了[0], P.准备好了[1], 500, 300, P.REF_WIDTH, P.REF_HEIGHT) || [];
     let ready = readyText.some(t => t && t.includes("准备"));
     let ready1 = readyText.some(t => t && t.includes("完成"));// && !readyText.some(t => t && t.includes("等待开始")) && !ok;
@@ -282,7 +282,7 @@ function main() {
                     handleUnknownScene();
                     break;
             }
-            sleep(700);
+            sleep(1000);
         }
     
 }
