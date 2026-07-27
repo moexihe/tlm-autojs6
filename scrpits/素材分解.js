@@ -115,7 +115,7 @@ function tappt() {
                             .slice(0, 20); // 取前20个匹配点
 
                         // 如果匹配点太少，跳过当前模板以避免误操作
-                        if (matches.length < 2) {
+                        if (matches.length < 3) {
                             console.log("匹配点少于2个，跳过模板: " + templatePath + " (匹配:" + matches.length + ")");
                             break; // 跳出重试循环，进入下一个模板
                         }
