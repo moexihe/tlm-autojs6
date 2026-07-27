@@ -77,7 +77,7 @@ function checkSpecialArena() {
             let skip = skipText.some(t => 
             t && keywords.some(k => t.includes(k))
             );
-        if (skip || skip1 || skip2) {
+        if (skip) {
             U.clickByPoint(P.跳过, P.REF_WIDTH, P.REF_HEIGHT);
             break;
         }
