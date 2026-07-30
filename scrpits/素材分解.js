@@ -261,6 +261,13 @@ function ensureMainPage(maxRetries = 2) {
 
 function main() {
     const taskTimeout = 2 * 60 * 1000;
+        threads.start(function(){
+        while(true){
+            sleep(300000);
+            console.clear();
+            console.log("清理日志记录")
+        }
+    })
     while (true) {
         if (!ensureMainPage()) {
             toast("无法定位主界面，重试");
