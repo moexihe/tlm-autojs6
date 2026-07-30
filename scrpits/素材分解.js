@@ -269,6 +269,7 @@ function main() {
         }
     })
     while (true) {
+        console.log("可用内存",(device.getAvailMem()/1024)/1024,"MB")
         if (!ensureMainPage()) {
             toast("无法定位主界面，重试");
             sleep(1200);
