@@ -259,7 +259,15 @@ function main() {
         maxFileSize: 384 << 10, /* 384 KB. */
         rootLevel: "off",
     });
+        threads.start(function(){
+        while(true){
+            sleep(300000);
+            console.clear();
+            console.log("清理日志记录")
+        }
+    })
         while (true) {
+            console.log("可用内存",(device.getAvailMem()/1024)/1024,"MB")
             let scene = detectScene();
             console.log("[场景检测] 当前场景 =>", scene);
             switch (scene) {
