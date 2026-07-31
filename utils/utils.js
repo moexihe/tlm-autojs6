@@ -208,8 +208,7 @@ function swipeByPoints(startPoint, endPoint, refWidth, refHeight, duration) {
     swipe(s[0], s[1], e[0], e[1], duration || 500);
 }
 
-function findimg(templatePath, threshold = 0.7) {
-    let img = null;
+function findimg(templatePath, threshold = 0.7) {;
     let template = null;
     try {
         img = captureScreen();
@@ -225,7 +224,6 @@ function findimg(templatePath, threshold = 0.7) {
         return [];
     } finally {
         try { template && template.recycle(); } catch (e) { }
-        try { img && img.recycle(); } catch (e) { }
     }
 }
 
