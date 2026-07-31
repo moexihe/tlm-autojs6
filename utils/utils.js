@@ -176,7 +176,6 @@ function ocrFullScreen() {
  * @returns {boolean} true 表示在主页面
  */
 function isMainPage(templatePath, threshold = 0.8) {
-    let img = null;
     let template = null;
     try {
         img = captureScreen();
@@ -187,13 +186,11 @@ function isMainPage(templatePath, threshold = 0.8) {
 
         let matchResult = images.matchTemplate(img, template, { threshold: threshold, max: 1 });
         console.log("isMainPage match result:", matchResult.matches);
-        img.recycle();
         return matchResult && matchResult.matches && matchResult.matches.length > 0;
     } catch (e) {
         return [];
     } finally {
         try { template && template.recycle(); } catch (e) { }
-        try { img && img.recycle(); } catch (e) { }
     }
 }
 
