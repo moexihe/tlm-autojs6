@@ -244,7 +244,6 @@ function getPointColor(point, refWidth, refHeight) {
         if (e.message.indexOf("captureScreen failed") !== -1) {
             toastLog("截图权限丢失，尝试重新申请...");
             // 重新申请权限
-            requestScreenCapture();
         } else {
             console.error(e);
             return [];
