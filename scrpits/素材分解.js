@@ -230,7 +230,7 @@ function enterPhotoModeAndBack() {
     U.pressByPoint(P.摄影模式, 100, P.REF_WIDTH, P.REF_HEIGHT);
     sleep(1000);
     console.log("后退");
-    swipePercent(0.175, 0.800, 0.175, 1, 3000);
+    swipePercent(0.175, 0.800, 0.175, 1, 1500);
 }
 
 function ensureMainPage(maxRetries = 2) {
