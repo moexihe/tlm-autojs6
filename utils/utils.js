@@ -274,7 +274,7 @@ function clickText(text, offsetX = 0, offsetY = 0) {
         grayImg = images.grayscale(rawImg);
 
         // 多个阈值候选
-        let thresholds = [120, 150, 160, 170, 180, 190, 200];
+        let thresholds = [110,120,130,140, 150, 160, 170, 180, 190, 200];
         let target = null;
 
         for (let t of thresholds) {
