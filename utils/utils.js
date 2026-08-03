@@ -261,27 +261,77 @@ function isPointColor(point, targetColor, tolerance = 20, refWidth, refHeight) {
  * OCR 识别指定文本并点击其中心（带坐标托底） //[cite: 2]
  * @param {string} text - 目标文本（如 "锻造"）
  */
-function clickText(text, offsetX = 0, offsetY = 0) {
-    let rawImg, grayImg;
+function clickText(text, offsetX = 0, offsetY = 0, region = null) {
+    let rawImg = null;
+    let grayImg = null;
     try {
         rawImg = captureScreen();
+        if (!rawImg) {
+            throw new Error("captureScreen failed");
+        }
+
         grayImg = images.grayscale(rawImg);
 
-        // 多个阈值候选
-        let thresholds = [100,110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230];
+        let thresholds = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230];
         let target = null;
 
-        for (let t of thresholds) {
-            let binImg = images.threshold(grayImg, t, 255, "BINARY");
-            let results = ocr.detect(binImg);
+        function detectInImg(img) {
+            let results = ocr.detect(img);
+            return results.find(item => item.text && item.text.includes(text));
+        }
 
-            let found = results.find(item => item.text.includes(text));
-            if (found && found.bounds) {
-                target = found;
-                binImg.recycle();
-                break; // 找到就停止
+        function getRegionBounds() {
+            if (!region || !Array.isArray(region) || region.length !== 4) {
+                return null;
             }
-            binImg.recycle();
+            let [x, y, w, h] = region;
+            return { x, y, w, h };
+        }
+
+        let bounds = getRegionBounds();
+        let imgToUse = grayImg;
+
+        if (bounds) {
+            let { x, y, w, h } = bounds;
+            let cropImg = images.clip(rawImg, x, y, w, h);
+            try {
+                let cropGrayImg = images.grayscale(cropImg);
+                try {
+                    for (let t of thresholds) {
+                        let binImg = images.threshold(cropGrayImg, t, 255, "BINARY");
+                        try {
+                            let found = detectInImg(binImg);
+                            if (found && found.bounds) {
+                                target = found;
+                                target.bounds = {
+                                    centerX: () => x + found.bounds.centerX(),
+                                    centerY: () => y + found.bounds.centerY()
+                                };
+                                break;
+                            }
+                        } finally {
+                            try { binImg.recycle(); } catch (e) {}
+                        }
+                    }
+                } finally {
+                    try { cropGrayImg.recycle(); } catch (e) {}
+                }
+            } finally {
+                try { cropImg.recycle(); } catch (e) {}
+            }
+        } else {
+            for (let t of thresholds) {
+                let binImg = images.threshold(grayImg, t, 255, "BINARY");
+                try {
+                    let found = detectInImg(binImg);
+                    if (found && found.bounds) {
+                        target = found;
+                        break;
+                    }
+                } finally {
+                    try { binImg.recycle(); } catch (e) {}
+                }
+            }
         }
 
         if (target && target.bounds) {
@@ -298,11 +348,14 @@ function clickText(text, offsetX = 0, offsetY = 0) {
         }
 
     } catch (e) {
-        console.log("clickTextError:", e)
+        console.log("clickTextError:", e);
+    } finally {
+        try { if (grayImg) grayImg.recycle(); } catch (e) {}
+        try { if (rawImg) rawImg.recycle(); } catch (e) {}
     }
 }
 
-function clickTextRaw(text, offsetX = 0, offsetY = 0) {
+function clickTextfull(text, offsetX = 0, offsetY = 0) {
     let rawImg = null;
     let target = null;
     try {
@@ -319,18 +372,47 @@ function clickTextRaw(text, offsetX = 0, offsetY = 0) {
             return null;
         }
 
-        target = findTarget(rawImg);
+        let candidates = [rawImg];
+
+        try {
+            let grayImg = images.grayscale(rawImg);
+            candidates.push(grayImg);
+        } catch (e) {
+            console.log("灰度处理失败:", e);
+        }
+
+        try {
+            let invertImg = images.invert(rawImg);
+            candidates.push(invertImg);
+        } catch (e) {
+            console.log("反色处理失败:", e);
+        }
+
+        for (let img of candidates) {
+            target = findTarget(img);
+            if (target && target.bounds) {
+                break;
+            }
+        }
 
         if (!target) {
             try {
-                let invertImg = images.invert(rawImg);
-                try {
-                    target = findTarget(invertImg);
-                } finally {
-                    try { invertImg.recycle(); } catch (e) {}
+                let grayImg = images.grayscale(rawImg);
+                let thresholds = [100, 120, 140, 160, 180, 200, 220];
+                for (let t of thresholds) {
+                    let binImg = images.threshold(grayImg, t, 255, "BINARY");
+                    try {
+                        target = findTarget(binImg);
+                        if (target && target.bounds) {
+                            break;
+                        }
+                    } finally {
+                        try { binImg.recycle(); } catch (e) {}
+                    }
                 }
+                try { grayImg.recycle(); } catch (e) {}
             } catch (e) {
-                console.log("反色 OCR 失败:", e);
+                console.log("二值化 OCR 失败:", e);
             }
         }
 
@@ -374,6 +456,6 @@ module.exports = {
     isPointColor,
     clickText,
     ensureScreenCapture,
-    clickTextRaw,
+    clickTextfull,
 };
 

@@ -153,7 +153,7 @@ function decompositionInterface(maxRetries = 2) {
         try {
             if (U.isMainPage(mainPageTemplate)) {
                 var Steps = [
-                    { text: "技能", dx: 0, dy: -50 },
+                    { text: "技能", dx: 0, dy: -50 ,region: [P.神速[0], P.神速[1], 300, 300]},
                     { text: "使用特殊技能", dx: 0, dy: 0 },
                     { text: "大师", dx: 0, dy: 0 },
                     { text: "素材加工", dx: 0, dy: -50 }
