@@ -188,6 +188,7 @@ function isMainPage(templatePath, threshold = 0.8) {
         console.log("isMainPage match result:", matchResult.matches);
         return matchResult && matchResult.matches && matchResult.matches.length > 0;
     } catch (e) {
+        console.error(e);
         return [];
     } finally {
         try { template && template.recycle(); } catch (e) { }
@@ -300,6 +301,47 @@ function clickText(text, offsetX = 0, offsetY = 0) {
         console.log("clickTextError:", e)
     }
 }
+
+function clickTextRaw(text, offsetX = 0, offsetY = 0) {
+    let rawImg = null;
+    try {
+        rawImg = captureScreen();
+        if (!rawImg) {
+            throw new Error("captureScreen failed");
+        }
+
+        let results = ocr.detect(rawImg);
+        let target = null;
+
+        if (results && results.length > 0) {
+            target = results.find(item => item.text && item.text.includes(text));
+        }
+
+        if (target && target.bounds) {
+            let x = target.bounds.centerX() + offsetX;
+            let y = target.bounds.centerY() + offsetY;
+            if (typeof x === "number" && typeof y === "number") {
+                click(x, y);
+                console.log(`成功点击 "${text}"，坐标: (${x}, ${y})`);
+            } else {
+                console.log(`坐标无效: ${text}`);
+            }
+        } else {
+            console.log(`未找到文字: ${text}`);
+        }
+    } catch (e) {
+        console.log("clickTextRawError:", e);
+    } finally {
+        try {
+            if (rawImg) {
+                rawImg.recycle();
+            }
+        } catch (e) {
+            // ignore recycle error
+        }
+    }
+}
+
 module.exports = {
     scalePoint,
     clickByPoint,
@@ -314,6 +356,7 @@ module.exports = {
     getPointColor,
     isPointColor,
     clickText,
-    ensureScreenCapture
+    ensureScreenCapture,
+    clickTextRaw
 };
 
