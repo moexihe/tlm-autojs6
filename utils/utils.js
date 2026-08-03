@@ -357,6 +357,6 @@ module.exports = {
     isPointColor,
     clickText,
     ensureScreenCapture,
-    clickTextRaw
+    clickTextRaw,
 };
 
