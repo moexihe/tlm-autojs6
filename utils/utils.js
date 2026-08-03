@@ -304,17 +304,34 @@ function clickText(text, offsetX = 0, offsetY = 0) {
 
 function clickTextRaw(text, offsetX = 0, offsetY = 0) {
     let rawImg = null;
+    let target = null;
     try {
         rawImg = captureScreen();
         if (!rawImg) {
             throw new Error("captureScreen failed");
         }
 
-        let results = ocr.detect(rawImg);
-        let target = null;
+        function findTarget(img) {
+            let results = ocr.detect(img);
+            if (results && results.length > 0) {
+                return results.find(item => item.text && item.text.includes(text));
+            }
+            return null;
+        }
 
-        if (results && results.length > 0) {
-            target = results.find(item => item.text && item.text.includes(text));
+        target = findTarget(rawImg);
+
+        if (!target) {
+            try {
+                let invertImg = images.invert(rawImg);
+                try {
+                    target = findTarget(invertImg);
+                } finally {
+                    try { invertImg.recycle(); } catch (e) {}
+                }
+            } catch (e) {
+                console.log("反色 OCR 失败:", e);
+            }
         }
 
         if (target && target.bounds) {

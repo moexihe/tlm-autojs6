@@ -152,9 +152,8 @@ function decompositionInterface(maxRetries = 2) {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
             if (U.isMainPage(mainPageTemplate)) {
-                sleep(500);
-                U.clickTextRaw("技能", 0, -50)
                 var Steps = [
+                    { text: "技能", dx: 0, dy: -50 },
                     { text: "使用特殊技能", dx: 0, dy: 0 },
                     { text: "大师", dx: 0, dy: 0 },
                     { text: "素材加工", dx: 0, dy: -50 }
