@@ -163,8 +163,10 @@ function decompositionInterface(maxRetries = 2) {
                     U.clickText(Steps.text, Steps.dx, Steps.dy)
 
                 });
-                // var Steps1=[P.返回,P.选单,P.角色,P.技能,P.使用特殊技能,P.锻造大师,P.素材加工]
-                // Steps1.clickSteps
+                if (U.findimg("/storage/emulated/0/脚本/scrpit/images/快捷技能.png")) {
+                    sleep(500);
+                    U.pressByPoint(P.快捷技能, 100, P.REF_WIDTH, P.REF_HEIGHT)
+                }
                 sleep(1000)
                 var result = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 300, 300, P.REF_WIDTH, P.REF_HEIGHT) || [];
                 console.log("decompositionInterface OCR result:", result);
