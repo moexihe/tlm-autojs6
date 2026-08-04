@@ -152,8 +152,16 @@ function decompositionInterface(maxRetries = 2) {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
             if (U.isMainPage(mainPageTemplate)) {
+                //点击技能逻辑
+                if (U.findimg("/storage/emulated/0/脚本/scrpit/images/快捷技能.png")) {
+                    sleep(500);
+                    U.pressByPoint(P.快捷技能, 100, P.REF_WIDTH, P.REF_HEIGHT)
+                } else {
+                    sleep(500);
+                    U.clickText("技能", 0, -50, [P.神速[0], P.神速[1], 300, 300]);
+                }
+                //
                 var Steps = [
-                    { text: "技能", dx: 0, dy: -50 ,region: [P.神速[0], P.神速[1], 300, 300]},
                     { text: "使用特殊技能", dx: 0, dy: 0 },
                     { text: "大师", dx: 0, dy: 0 },
                     { text: "素材加工", dx: 0, dy: -50 }
@@ -163,10 +171,7 @@ function decompositionInterface(maxRetries = 2) {
                     U.clickText(Steps.text, Steps.dx, Steps.dy)
 
                 });
-                if (U.findimg("/storage/emulated/0/脚本/scrpit/images/快捷技能.png")) {
-                    sleep(500);
-                    U.pressByPoint(P.快捷技能, 100, P.REF_WIDTH, P.REF_HEIGHT)
-                }
+
                 sleep(1000)
                 var result = U.ocrRegionCenter(P.开始加工[0], P.开始加工[1], 300, 300, P.REF_WIDTH, P.REF_HEIGHT) || [];
                 console.log("decompositionInterface OCR result:", result);
