@@ -269,7 +269,7 @@ function ensureMainPage(maxRetries = 2) {
 }
 
 function main() {
-    const taskTimeout = 2 * 60 * 1000;
+    const taskTimeout = 10 * 60 * 1000;
         threads.start(function(){
         while(true){
             sleep(300000);
