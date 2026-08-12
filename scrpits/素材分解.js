@@ -201,15 +201,17 @@ function decompositionInterface(maxRetries = 2) {
     return false;
 }
 
-function runTaskWithTimeout(timeoutMs = 5 * 60 * 1000) {
+function runTaskWithTimeout(timeoutMs = 10 * 60 * 1000) {
     let start = Date.now();
     console.log("开始执行任务，超时时间(ms):", timeoutMs, "开始时间:", start.toString());
     while (Date.now() - start < timeoutMs) {
         U.pressByPoint(P.神速, 30, P.REF_WIDTH, P.REF_HEIGHT);
         for (let i = 0; i < 150; i++) {
             U.pressByPoint(P.攻击, 20, P.REF_WIDTH, P.REF_HEIGHT);
-            sleep(100);
-            if ((i + 1) % 20 === 0) {
+            sleep(80);
+            if ((i + 1) % 12 === 0) {
+                U.pressByPoint(P.旭日, 20, P.REF_WIDTH, P.REF_HEIGHT);
+                sleep(120);
                 U.pressByPoint(P.旭日, 20, P.REF_WIDTH, P.REF_HEIGHT);
                 sleep(120);
             }
