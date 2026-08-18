@@ -91,6 +91,7 @@ function checkSpecialArena() {
 
 
 function checkReady() {
+    for (var i = 0; i < 3; i++) {
     console.log("[准备界面] 检查准备好了按钮");
     // let point = [1444, 906];
     // let ok = U.isPointColor(point, "#8e8e8e", 30, P.REF_WIDTH, P.REF_HEIGHT);
@@ -104,6 +105,7 @@ function checkReady() {
         U.clickByPoint(P.准备好了, P.REF_WIDTH, P.REF_HEIGHT);
         sleep(100);
     }
+}
 }
 
 function isHomePage() {
