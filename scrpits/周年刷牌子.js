@@ -275,11 +275,11 @@ function main() {
                 case "SPECIAL_ENTRY":
                     handleHomeScene();
                     break;
-                case "SPECIAL_ARENA":
-                    handleSpecialArenaScene();
-                    break;
                 case "READY":
                     handleReadyScene();
+                    break;
+                case "SPECIAL_ARENA":
+                    handleSpecialArenaScene();
                     break;
                 case "BATTLE":
                     handleBattleScene();
